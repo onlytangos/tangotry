@@ -5,9 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>
 :root {
-  --fuenteX: 18px;   /* movil */
-  --fuenteG: 16px;   /* fuente var(--fuenteG) */
-  --fuenteP: 12px;   /* fuente var(--fuenteP) */
+  --fuenteX: 20px;   /* movil */
+  --fuenteG: 18px;   /* fuente var(--fuenteG) */
+  --fuenteP: 14px;   /* fuente var(--fuenteP) */
   --colorP: #FFDD00; /* color principal var(--colorP) */
   --bg: #111;        /* bg principal var(--bg) */
   --bg2: #222;       /* bg second var(--bg2) */
@@ -23,7 +23,7 @@
   align-items: center;
   cursor: pointer;
   color: #888 !important;
-  font-size: 24px !important;
+  font-size: 26px !important;
   line-height: 1;
   user-select: none;
 }
@@ -87,6 +87,9 @@ input.toggle:checked + label .off {
   opacity: 0;
 }
 
+body{
+  font-size: 18px; /* por defecto del navegador 16px + 2 */
+}
 *{
    font-family: "Courier New", monospace;
 }
@@ -144,6 +147,23 @@ html, body {
 	flex: 1; /* ajuste responsive al resto del ancho disponible */
 	position: relative;
   margin-top: 2px;
+  display: flex;
+  flex-direction: column;
+}
+/* barra del slider: misma altura que #contenedor-botones */
+#barra-slider{
+  height: 28px;
+  flex-shrink: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+#posicion{
+  width: 60%;
+  max-width: 600px;
+  margin: 0;
+  accent-color: var(--colorP);
+  cursor: pointer;
 }
 #controles{
   height: auto;        /* era 580px fijo */
@@ -212,7 +232,7 @@ textarea::placeholder {
   transform: translateY(-50%);
   cursor: pointer;
   color: var(--bg3);
-  font-size: 14px;
+  font-size: 16px;
   line-height: 1;
   display: none;
   user-select: none;
@@ -225,7 +245,7 @@ textarea::placeholder {
 }
 #S5,#S5>option{
   width:100%;
-  font-size:var(--fuenteP);
+  font-size:calc(var(--fuenteP) + 2px);
   scrollbar-width: thin;
   overflow-y: none;  
 }
@@ -242,6 +262,10 @@ textarea::placeholder {
 #player,#player2{
 	width: 100%;
 	height: 100%;
+}
+#player2{
+  flex: 1;
+  min-height: 0; /* el video ocupa el resto bajo el slider */
 }
 
 /* ===== RESPONSIVE MÓVIL ===== */
@@ -287,6 +311,19 @@ textarea::placeholder {
     display: block;
   }
 
+  #barra-slider {
+    width: 100%;
+    height: auto;
+    padding: 0;
+    /* mismo hueco slider-botones que slider-video (13px medidos en pantalla) */
+    margin-bottom: 13px;
+  }
+
+  #posicion {
+    width: 100%;     /* ancho de pantalla, sobre el video */
+    max-width: none;
+  }
+
   #busqueda-wrap, #busqueda {
     width: 100% !important;
   }
@@ -315,7 +352,7 @@ textarea::placeholder {
 
 #S5, #S5 > option {
   width: 100% !important;
-  font-size: var(--fuenteX);
+  font-size: calc(var(--fuenteX) + 2px);
 }
 
   #datosvideo, #imprimir, #salidaimprimir, #pie, #leyenda {
@@ -654,6 +691,7 @@ function loopTimer(){
   if (local!=undefined){ // local
     var x=document.getElementById("player2");
     if (bucle && x.currentTime>section.end) x.currentTime=section.start;
+    actualizaSlider(x);
   }else{ // YT
   //console.log("YT",player.getCurrentTime(),section.end);    
 //    if (bucle && player.getCurrentTime()>section.end) player.seekTo(section.start);
@@ -679,6 +717,34 @@ function cargaVideoLocal(vid,a,b){
   x.muted=true; 
   x.playbackRate=1;  
   x.play();
+}
+
+// tramo del clip: [inicio, fin] en segundos, recortado a la duración real
+// (en datos.js los tiempos son texto, p.ej. "000" y "999")
+function tramo(x){
+  var ini=Number(section.start)||0;
+  var fin=Number(section.end);
+  if (!(fin>ini) || fin>x.duration) fin=x.duration;
+  return {ini: ini, fin: fin};
+}
+
+// mover el slider según la posición del video (salvo si se está arrastrando)
+var arrastrando=false;
+function actualizaSlider(x){
+  if (arrastrando) return;
+  var t=tramo(x);
+  if (!(t.fin>t.ini)) return;
+  var v=(x.currentTime-t.ini)/(t.fin-t.ini)*1000;
+  document.getElementById('posicion').value=Math.max(0,Math.min(1000,v));
+}
+
+// mover el video según el slider
+function cambioPosicion(){
+  if (local==undefined) return;
+  var x=document.getElementById("player2");
+  var t=tramo(x);
+  if (!(t.fin>t.ini)) return;
+  x.currentTime=t.ini+document.getElementById('posicion').value/1000*(t.fin-t.ini);
 }
 
 function loopLocal(){
@@ -784,9 +850,9 @@ function madeSelectores(){
     el3.id='S'+j;
     el1.appendChild(el3);
   }
-  document.getElementById('S'+selVideo).size = (window.innerWidth <= 600 ? 8 : 14);
+  document.getElementById('S'+selVideo).size = 8;
   window.addEventListener('resize', function(){
-    document.getElementById('S'+selVideo).size = (window.innerWidth <= 600 ? 8 : 14);
+    document.getElementById('S'+selVideo).size = 8;
   });
 }
 
@@ -896,26 +962,26 @@ window.onload=inicio;
     <div id="contenedor-botones">
         <input type="checkbox" id="velo" class="toggle">
         <label for="velo" class="toggle-btn">
-          <span class="on">SLOW</span>
-          <span class="off">FAST</span>
+          <span class="on">FAST</span>
+          <span class="off">SLOW</span>
         </label>
 
         <input type="checkbox" id="pausa" class="toggle">
         <label for="pausa" class="toggle-btn">
-          <span class="on">STOP</span>
-          <span class="off">GO</span>
+          <span class="on">GO</span>
+          <span class="off">STOP</span>
         </label>
 
         <input type="checkbox" id="bucle" class="toggle">
         <label for="bucle" class="toggle-btn">
-          <span class="on">LOOP</span>
-          <span class="off">CONT</span>
+          <span class="on">CONT</span>
+          <span class="off">LOOP</span>
         </label>
 
         <input type="checkbox" id="voz" class="toggle">
         <label for="voz" class="toggle-btn">
-          <span class="on">SOUND</span>
-          <span class="off">OFF</span>
+          <span class="on">OFF</span>
+          <span class="off">SOUND</span>
         </label>
     </div>
 
@@ -934,6 +1000,10 @@ window.onload=inicio;
 </div>
  
    <div id='cont2'>
+     <div id='barra-slider'>
+       <input type='range' id='posicion' min='0' max='1000' value='0'
+         oninput='arrastrando=true;cambioPosicion()' onchange='arrastrando=false'>
+     </div>
      <video id='player2'></video> <!-- 1. The <iframe> (and video player) will replace this <div> tag. -->
     <div id="player"></div>
    </div>
