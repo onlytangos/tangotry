@@ -164,6 +164,7 @@ html, body {
   margin: 0;
   accent-color: var(--colorP);
   cursor: pointer;
+  touch-action: none; /* arrastrar con el dedo no desplaza la página */
 }
 #controles{
   height: auto;        /* era 580px fijo */
@@ -322,6 +323,7 @@ textarea::placeholder {
   #posicion {
     width: 100%;     /* ancho de pantalla, sobre el video */
     max-width: none;
+    height: 32px;    /* más fácil de coger con el dedo */
   }
 
   #busqueda-wrap, #busqueda {
@@ -336,10 +338,10 @@ textarea::placeholder {
   }
 
   label:not(.toggle-btn) {
-    width: 75px !important;
+    width: 100px !important;   /* "position" entero */
     white-space: nowrap;
     flex-shrink: 0;
-    font-size: var(--colorX);
+    font-size: var(--fuenteG);
   }
 
   #S4,#S3,#S2,#S1,#S0 {
@@ -708,9 +710,44 @@ function loopYT() {
 }
 */
 
+// copia en memoria (blob) de los últimos videos: con el video entero ya
+// descargado, mover el slider no espera a la red y es fluido. Mientras se
+// descarga se ve el video directo; al terminar se cambia por la copia en el
+// mismo punto. En file:// fetch falla: se queda el directo.
+var cacheVideos=new Map(); // url -> blob url
+var MAXCACHE=6;
+function cacheVideo(vid){
+  if (cacheVideos.has(vid)) return Promise.resolve(cacheVideos.get(vid));
+  return fetch(vid).then(function(r){
+    if (!r.ok) throw new Error(r.status);
+    return r.blob();
+  }).then(function(bl){
+    var u=URL.createObjectURL(bl);
+    cacheVideos.set(vid,u);
+    if (cacheVideos.size>MAXCACHE){ // fuera el más antiguo
+      var k=cacheVideos.keys().next().value;
+      URL.revokeObjectURL(cacheVideos.get(k));
+      cacheVideos.delete(k);
+    }
+    return u;
+  });
+}
+
+var videoActual=''; // url del video cargado (no la del blob)
 function cargaVideoLocal(vid,a,b){
   var x = document.getElementById("player2");  
-  x.src=vid;//+'.mp4';
+  videoActual=vid;
+  x.src=cacheVideos.get(vid)||vid;
+  if (!cacheVideos.has(vid)){
+    cacheVideo(vid).then(function(u){
+      if (videoActual!=vid) return; // ya se ha cambiado de video
+      var t=x.currentTime, parado=x.paused;
+      x.src=u;
+      x.currentTime=t;
+      x.playbackRate=document.getElementById('velo').checked?0.25:1;
+      if (!parado) x.play();
+    }).catch(function(){});
+  }
   x.controls=true;
   x.currentTime=section.start;
   x.loop=true; 
@@ -738,13 +775,57 @@ function actualizaSlider(x){
   document.getElementById('posicion').value=Math.max(0,Math.min(1000,v));
 }
 
-// mover el video según el slider
+// mover el video según el slider. Mientras se arrastra: un seek cada vez (el
+// siguiente al terminar el anterior, con la última posición del dedo) y
+// fastSeek (al fotograma clave más cercano) si el navegador lo tiene; al
+// soltar, el punto exacto y sigue si no estaba parado
+var seekPendiente=null, seguiaAntes=false;
+function posSlider(x){
+  var t=tramo(x);
+  if (!(t.fin>t.ini)) return null;
+  return t.ini+document.getElementById('posicion').value/1000*(t.fin-t.ini);
+}
+function seek(x,p,rapido){
+  if (rapido && x.fastSeek) x.fastSeek(p); else x.currentTime=p;
+}
 function cambioPosicion(){
   if (local==undefined) return;
   var x=document.getElementById("player2");
-  var t=tramo(x);
-  if (!(t.fin>t.ini)) return;
-  x.currentTime=t.ini+document.getElementById('posicion').value/1000*(t.fin-t.ini);
+  var p=posSlider(x);
+  if (p==null) return;
+  if (x.seeking){ seekPendiente=p; return; }
+  seek(x,p,true);
+}
+function empiezaArrastre(){
+  if (arrastrando || local==undefined) return;
+  arrastrando=true;
+  var x=document.getElementById("player2");
+  seguiaAntes=!x.paused;
+  x.pause();
+}
+function terminaArrastre(){
+  if (!arrastrando) return;
+  arrastrando=false;
+  seekPendiente=null;
+  if (local==undefined) return;
+  var x=document.getElementById("player2");
+  var p=posSlider(x);
+  if (p!=null) x.currentTime=p;
+  if (seguiaAntes && !document.getElementById('pausa').checked) x.play();
+}
+function preparaSlider(){
+  var s=document.getElementById('posicion');
+  s.addEventListener('pointerdown',empiezaArrastre);
+  s.addEventListener('touchstart',empiezaArrastre,{passive:true});
+  s.addEventListener('input',function(){ empiezaArrastre(); cambioPosicion(); });
+  ['pointerup','pointercancel','touchend','touchcancel','change'].forEach(function(e){
+    s.addEventListener(e,terminaArrastre);
+  });
+  document.getElementById('player2').addEventListener('seeked',function(){
+    if (seekPendiente==null || !arrastrando) return;
+    var p=seekPendiente; seekPendiente=null;
+    seek(this,p,true);
+  });
 }
 
 function loopLocal(){
@@ -932,6 +1013,7 @@ function inicio(){
   document.getElementById('velo').addEventListener('change',cambioVelo); 
   document.getElementById('pausa').addEventListener('change',cambioPausa);
   document.getElementById('voz').addEventListener('change',cambioVoz);
+  preparaSlider();
 // crear options y eventos del selector
   for (var j=0;j<datos.length;j++){
     var n='S'+j;   
@@ -1001,8 +1083,7 @@ window.onload=inicio;
  
    <div id='cont2'>
      <div id='barra-slider'>
-       <input type='range' id='posicion' min='0' max='1000' value='0'
-         oninput='arrastrando=true;cambioPosicion()' onchange='arrastrando=false'>
+       <input type='range' id='posicion' min='0' max='1000' value='0'>
      </div>
      <video id='player2'></video> <!-- 1. The <iframe> (and video player) will replace this <div> tag. -->
     <div id="player"></div>
