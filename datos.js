@@ -694,8 +694,6 @@ var videos= [
 ["LU010","000","999","LU","#1-next","escenario","","","./M/LU010escenario.mp4"],
 ["LU011","000","999","LU","#1-next","escenario","","","./M/LU011escenario.mp4"],
 ["LU012","000","999","LU","#1-next","escenario","","","./M/LU012escenario.mp4"],
-["LU013","000","999","LU","#1-next","escenario","","","./M/LU013escenario.mp4"],
-["LU014","000","999","LU","#1-next","escenario","","","./M/LU014escenario.mp4"],
 ["MA000","000","999","MA","","inicio","","","./M/MA000inicio.mp4"],
 ["MA001","000","999","MA","","giro","","","./M/MA001giro.mp4"],
 ["MA002","000","999","MA","","milonga","","","./M/MA002milonga.mp4"],
