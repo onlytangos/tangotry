@@ -156,6 +156,7 @@ html, body {
 }
 #cont1{
 	width: 350px;
+	overflow-y: auto; /* en PC, si no cabe en la pantalla, scroll en el panel (no se corta) */
 }
 #cont2{
 	flex: 1; /* ajuste responsive al resto del ancho disponible */
@@ -181,8 +182,7 @@ html, body {
   touch-action: none; /* arrastrar con el dedo no desplaza la página */
 }
 #controles{
-  height: auto;        /* era 580px fijo */
-  max-height: calc(100vh - 120px);
+  height: auto;        /* era 580px fijo; sin máximo: el panel 1 hace scroll */
 }
 #selectores{
 }
@@ -197,6 +197,8 @@ html, body {
 }
 #datosvideo{
   font-size: var(--fuenteG); /* como el resto del texto (los selectores) */
+  height: auto;              /* el alto, el del contenido: */
+  overflow-wrap: anywhere;   /* lo largo sin blancos (fi, po) pasa a la línea siguiente */
 }
 #salidaimprimir,#imprimir{
   overflow: hidden;
