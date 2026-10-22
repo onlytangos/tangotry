@@ -156,6 +156,7 @@ html, body {
 }
 #cont1{
 	width: 350px;
+	padding-top: 0;   /* TangoTry, arriba del todo */
 	overflow-y: auto; /* en PC, si no cabe en la pantalla, scroll en el panel (no se corta) */
 }
 #cont2{
@@ -182,6 +183,7 @@ html, body {
   touch-action: none; /* arrastrar con el dedo no desplaza la página */
 }
 #controles{
+  padding-top: 0;
   height: auto;        /* era 580px fijo; sin máximo: el panel 1 hace scroll */
 }
 #selectores{
@@ -1088,7 +1090,6 @@ window.onload=async()=>{ if (await descifra()) inicio(); };
 <div id='controles'>
 
 
-		<span id='C5' id='info'></span>
 		<div id='titulo'>TangoTry</div>
 		<div id='selectores'></div>
 		<div id='datosvideo'></div>  
