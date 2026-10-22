@@ -69,6 +69,19 @@ input.toggle:checked + label:hover {
 input.toggle:checked + label {
   background-color: #385735 !important; /* activado */
 }
+/* bucle, al revés que los demás: CONTINUE (activado) en rojo, LOOP en verde */
+#bucle + label {
+  background-color: #385735 !important;
+}
+#bucle + label:hover {
+  background-color: #25a143 !important;
+}
+#bucle:checked + label {
+  background-color: #a9234f !important;
+}
+#bucle:checked + label:hover {
+  background-color: #df4b46 !important;
+}
 /* textos dentro del botón */
 input.toggle + label span {
   position: absolute;
