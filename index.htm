@@ -651,12 +651,12 @@ let txt='';
 let txt1=videos[b][colUrl].split('/').pop();
 let txt2=parejasMapa.get(videos[b][colAutor]);
 txt+=videos[b][colId]+':'+txt2+'<br/>';   
-// el resto, seguido y con comas (la caja, la mitad de alta)
+// el resto, seguido y separado por un blanco (la caja, la mitad de alta)
 txt+=['fi:'+txt1,
       'su:'+videos[b][colTema],
       'gr:'+videos[b][colGrupo],
       'po:'+videos[b][colPosicion],
-      'st:'+videos[b][colEstado]].join(', ');
+      'st:'+videos[b][colEstado]].join(' ');
 
   document.getElementById('datosvideo').innerHTML=txt; 
   seleActivo=parseInt(a);
