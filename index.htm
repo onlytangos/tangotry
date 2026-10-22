@@ -273,14 +273,23 @@ textarea::placeholder {
 /* ===== RESPONSIVE MÓVIL ===== */
 @media (max-width: 600px) {
 
+  /* cada panel, una pantalla: el 1 (selectores) y, con scroll, el 2 (player); el scroll se para
+     en cada uno */
+  html {
+    scroll-snap-type: y mandatory;
+  }
+
   #contenedor {
     flex-direction: column;
-    height: auto;     /* la página hace scroll: player arriba, selectores (panel 1) debajo */
+    height: auto;
     overflow: visible;
   }
 
   #cont1 {
     width: 100%;
+    min-height: 100vh;
+    min-height: 100dvh;
+    scroll-snap-align: start;
   }
 
   #controles {
@@ -289,10 +298,10 @@ textarea::placeholder {
 
   #cont2 {
     width: 100%;
-    order: -1;
     flex: none;
     height: 100vh;
     height: 100dvh;   /* el player (botones, slider y video): una pantalla entera */
+    scroll-snap-align: start;
     margin-top: 0;
   }
 
