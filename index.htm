@@ -31,10 +31,10 @@
 #contenedor-botones {
   font-size:var(--fuenteG) !important;
   display: flex;
-  justify-content: center; /* centra horizontal        */
-  align-items: center;      /* centra vertical            */
-  gap: 10px;                    /* espacio entre botones */
-  margin-bottom: -10px;
+  align-items: stretch;
+  gap: 6px;                     /* espacio entre botones */
+  flex-shrink: 0;
+  width: 100%;
 }
 /* ocultar checkbox real */
 input.toggle {
@@ -45,8 +45,9 @@ input.toggle + label {
   display: inline-flex !important;       /* fuerza display */
   justify-content: center;
   align-items: center;
-  width: 70px !important;
-  height: 24px;
+  flex: 1;                /* los 4 se reparten todo el ancho */
+  width: auto !important;
+  height: 44px;
   border-radius: 4px;
   background-color: #a9234f !important; /* inicial */
   color: var(--colorP);
@@ -152,15 +153,15 @@ html, body {
 }
 /* barra del slider: misma altura que #contenedor-botones */
 #barra-slider{
-  height: 28px;
+  height: 36px;
   flex-shrink: 0;
   display: flex;
   justify-content: center;
   align-items: center;
 }
 #posicion{
-  width: 60%;
-  max-width: 600px;
+  width: 100%;
+  height: 32px;
   margin: 0;
   accent-color: var(--colorP);
   cursor: pointer;
@@ -274,56 +275,35 @@ textarea::placeholder {
 
   #contenedor {
     flex-direction: column;
-    overflow-y: auto;
-    height: auto;
-    min-height: 100dvh;
+    height: 100vh;
+    height: 100dvh;   /* toda la pantalla y nada más: sin scroll */
+    overflow: hidden;
   }
 
   #cont1 {
     width: 100%;
-    display: flex;
-    flex-direction: column;
+    flex-shrink: 0;
   }
 
   #controles {
     max-height: none;
-    display: contents;
-  }
-
-  #selectores {
-    order: 1;
-  }
-
-  #contenedor-botones {
-    order: 2;
-    margin: 4px 0 5px 0 !important;
   }
 
   #cont2 {
-    order: 3;
     width: 100%;
-    height: 60vw;
-    min-height: 200px;
+    flex: 1;          /* botones, slider y video: el resto de la altura */
+    min-height: 0;
+    margin-top: 0;
   }
 
   #player2 {
     width: 100%;
-    height: 100%;
     display: block;
   }
 
   #barra-slider {
     width: 100%;
-    height: auto;
     padding: 0;
-    /* mismo hueco slider-botones que slider-video (13px medidos en pantalla) */
-    margin-bottom: 13px;
-  }
-
-  #posicion {
-    width: 100%;     /* ancho de pantalla, sobre el video */
-    max-width: none;
-    height: 32px;    /* más fácil de coger con el dedo */
   }
 
   #busqueda-wrap, #busqueda {
@@ -747,7 +727,7 @@ function cargaVideoLocal(vid,a,b){
       if (!parado) x.play();
     }).catch(function(){});
   }
-  x.controls=true;
+  x.controls=false; // sin los controles del navegador: los de la página
   x.currentTime=section.start;
   x.loop=true; 
   x.muted=true; 
@@ -1013,6 +993,9 @@ function inicio(){
   document.getElementById('pausa').addEventListener('change',cambioPausa);
   document.getElementById('voz').addEventListener('change',cambioVoz);
   preparaSlider();
+  document.getElementById('player2').addEventListener('click',function(){
+    document.getElementById('pausa').click();
+  });
 // crear options y eventos del selector
   for (var j=0;j<datos.length;j++){
     var n='S'+j;   
@@ -1055,7 +1038,23 @@ window.onload=async()=>{ if (await descifra()) inicio(); };
 <div id='cont1'>
 <div id='controles'>
 
-    <div id="contenedor-botones">
+
+		<span id='C5' id='info'></span>
+		<div id='selectores'></div>
+		<div id='datosvideo'></div>  
+		<div id='imprimir'>! click to print selection !</div>  
+		<div id='salidaimprimir'></div>  
+</div>
+	
+  	<div id='pie'>
+  	      [<a target='_blank' href='https://tangopasionradio.com/'>tangopasion radio</a>][<a target='_blank' href='https://www.youtube.com/playlist?list=PLWDxvk52aZtNhYVrdlJtuxpYARuJZIKVc'>solos</a>][<a target='_blank' href='https://www.youtube.com/watch?v=w7NI04R4cGU&list=PLWDxvk52aZtPVNj5m38CD1wbCnNbAhpd3'>cantores</a>][<a target='_blank' href='https://www.youtube.com/watch?v=jGM2Ah0tShs&list=PLWDxvk52aZtOqk1MT9Oy62G6o00a6clSG'>tandas</a>][<a target='_blank' href='https://www.youtube.com/watch?v=qdRXB1_5rVE&list=PLWDxvk52aZtPw0BSroC3EC6h5Mle2iCeb'>orquestas</a>][<a href='https://www.youtube.com/@overjazzrecords/playlists' target='_blank'>overjazz</a>]
+  	</div>	
+  	<div id='leyenda'></div> 
+
+</div>
+ 
+   <div id='cont2'>
+     <div id="contenedor-botones">
         <input type="checkbox" id="velo" class="toggle">
         <label for="velo" class="toggle-btn">
           <span class="on">FAST</span>
@@ -1079,27 +1078,11 @@ window.onload=async()=>{ if (await descifra()) inicio(); };
           <span class="on">OFF</span>
           <span class="off">SOUND</span>
         </label>
-    </div>
-
-		<span id='C5' id='info'></span>
-		<div id='selectores'></div>
-		<div id='datosvideo'></div>  
-		<div id='imprimir'>! click to print selection !</div>  
-		<div id='salidaimprimir'></div>  
-</div>
-	
-  	<div id='pie'>
-  	      [<a target='_blank' href='https://tangopasionradio.com/'>tangopasion radio</a>][<a target='_blank' href='https://www.youtube.com/playlist?list=PLWDxvk52aZtNhYVrdlJtuxpYARuJZIKVc'>solos</a>][<a target='_blank' href='https://www.youtube.com/watch?v=w7NI04R4cGU&list=PLWDxvk52aZtPVNj5m38CD1wbCnNbAhpd3'>cantores</a>][<a target='_blank' href='https://www.youtube.com/watch?v=jGM2Ah0tShs&list=PLWDxvk52aZtOqk1MT9Oy62G6o00a6clSG'>tandas</a>][<a target='_blank' href='https://www.youtube.com/watch?v=qdRXB1_5rVE&list=PLWDxvk52aZtPw0BSroC3EC6h5Mle2iCeb'>orquestas</a>][<a href='https://www.youtube.com/@overjazzrecords/playlists' target='_blank'>overjazz</a>]
-  	</div>	
-  	<div id='leyenda'></div> 
-
-</div>
- 
-   <div id='cont2'>
+     </div>
      <div id='barra-slider'>
        <input type='range' id='posicion' min='0' max='1000' value='0'>
      </div>
-     <video id='player2'></video> <!-- 1. The <iframe> (and video player) will replace this <div> tag. -->
+     <video id='player2' playsinline disablepictureinpicture></video> <!-- 1. The <iframe> (and video player) will replace this <div> tag. -->
     <div id="player"></div>
    </div>
 
