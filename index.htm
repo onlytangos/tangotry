@@ -364,12 +364,11 @@ textarea::placeholder {
 }
 </style>
 
-<script src='datos.js'></script>
+<script src='datos.cifrados.js'></script>
 
 <script>
 // datos.js nuevo usa listaParejas (objeto) y etiquetas en vez de parejasMapa (Map) y tema
-var parejasMapa = new Map(Object.entries(listaParejas));
-var tema = etiquetas;
+var parejasMapa, tema;
 </script>
 
 <script>
@@ -1030,7 +1029,22 @@ function inicio(){
    carga(0,0); // cargar el primer video de la lista
 }
 
-window.onload=inicio;
+async function descifra(){
+	const k=new URLSearchParams(location.hash.slice(1)).get('k')||'';
+	try {
+		const bytes=t=>Uint8Array.from(atob(t),c=>c.charCodeAt(0));
+		const datos=bytes(DATOS_CIFRADOS);
+		const clave=await crypto.subtle.importKey('raw',bytes(k.replace(/-/g,'+').replace(/_/g,'/')),'AES-GCM',false,['decrypt']);
+		const texto=await crypto.subtle.decrypt({name:'AES-GCM',iv:datos.slice(0,12)},clave,datos.slice(12));
+		(0,eval)(new TextDecoder().decode(texto));   // var listaParejas, etiquetas, videos
+		parejasMapa=new Map(Object.entries(listaParejas)); tema=etiquetas;
+		return true;
+	} catch(e){
+		document.body.textContent=k ? 'la clave de la url no es válida' : 'falta la clave en la url (#k=...)';
+		return false;
+	}
+}
+window.onload=async()=>{ if (await descifra()) inicio(); };
 
 </script>
 
