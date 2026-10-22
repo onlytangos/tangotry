@@ -638,11 +638,12 @@ let txt='';
 let txt1=videos[b][colUrl].split('/').pop();
 let txt2=parejasMapa.get(videos[b][colAutor]);
 txt+=videos[b][colId]+': '+txt2+'<br/>';   
-txt+='fi: '+txt1+'<br/>'; 
-txt+='su: '+videos[b][colTema]+'<br/>';
-txt+='gr: '+videos[b][colGrupo]+'<br/>';
-txt+='po: '+videos[b][colPosicion]+'<br/>';
-txt+='st: '+videos[b][colEstado]+'<br/>';
+// el resto, seguido y con comas (la caja, la mitad de alta)
+txt+=['fi: '+txt1,
+      'su: '+videos[b][colTema],
+      'gr: '+videos[b][colGrupo],
+      'po: '+videos[b][colPosicion],
+      'st: '+videos[b][colEstado]].join(', ');
 
   document.getElementById('datosvideo').innerHTML=txt; 
   seleActivo=parseInt(a);
@@ -919,9 +920,9 @@ function madeSelectores(){
     el3.id='S'+j;
     el1.appendChild(el3);
   }
-  document.getElementById('S'+selVideo).size = 8;
+  document.getElementById('S'+selVideo).size = 12;
   window.addEventListener('resize', function(){
-    document.getElementById('S'+selVideo).size = 8;
+    document.getElementById('S'+selVideo).size = 12;
   });
 }
 
