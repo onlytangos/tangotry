@@ -275,14 +275,12 @@ textarea::placeholder {
 
   #contenedor {
     flex-direction: column;
-    height: 100vh;
-    height: 100dvh;   /* toda la pantalla y nada más: sin scroll */
-    overflow: hidden;
+    height: auto;     /* la página hace scroll: player arriba, selectores (panel 1) debajo */
+    overflow: visible;
   }
 
   #cont1 {
     width: 100%;
-    flex-shrink: 0;
   }
 
   #controles {
@@ -291,8 +289,10 @@ textarea::placeholder {
 
   #cont2 {
     width: 100%;
-    flex: 1;          /* botones, slider y video: el resto de la altura */
-    min-height: 0;
+    order: -1;
+    flex: none;
+    height: 100vh;
+    height: 100dvh;   /* el player (botones, slider y video): una pantalla entera */
     margin-top: 0;
   }
 
