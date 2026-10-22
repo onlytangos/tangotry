@@ -267,6 +267,13 @@ textarea::placeholder {
   line-height: 1;
   padding: 0 0 6px 0; /* sin blanco encima */
 }
+#titulo a{
+  font-size: var(--fuenteP); /* by KoKoTango, más pequeño */
+  font-weight: normal;
+}
+#titulo a:hover{
+  color: white;
+}
 #busqueda-lupa{
   position: absolute;
   left: 6px;
@@ -1090,7 +1097,7 @@ window.onload=async()=>{ if (await descifra()) inicio(); };
 <div id='controles'>
 
 
-		<div id='titulo'>TangoTry</div>
+		<div id='titulo'>TangoTry <a href='https://www.facebook.com/profile.php?id=100093497583670' target='_blank' rel='noopener'>by KoKoTango</a></div>
 		<div id='selectores'></div>
 		<div id='datosvideo'></div>  
 		<div id='imprimir'>! click to print selection !</div>  
