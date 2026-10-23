@@ -350,7 +350,7 @@ textarea::placeholder {
   min-height: 0; /* el video ocupa el resto bajo el slider */
 }
 
-/* barras para pasar de los selectores al video y volver: solo en el móvil */
+/* barra para volver del video a los selectores: solo en el móvil */
 .barra-movil{
   display: none;
 }
@@ -375,9 +375,6 @@ textarea::placeholder {
     min-height: 100vh;
     min-height: 100dvh;
     scroll-snap-align: start;
-    overflow: visible;        /* sin scroll propio: la barra de abajo se pega a la pantalla */
-    display: flex;
-    flex-direction: column;
   }
 
   .barra-movil {
@@ -392,12 +389,6 @@ textarea::placeholder {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-  }
-
-  #irvideo {
-    position: sticky;
-    bottom: 0;
-    margin-top: auto;         /* abajo del panel aunque los selectores sean cortos */
   }
 
   /* botones del video un 10% más pequeños, el slider un 10% mayor */
@@ -473,12 +464,11 @@ textarea::placeholder {
   font-size: calc(var(--fuenteX) + 2px);
 }
 
-  #datosvideo {
-    box-sizing: border-box;
-    width: 100%;   /* fuera del móvil, 332px fijos */
+  #D3, #D4 {   /* sin los selectores position y state */
+    display: none !important;
   }
 
-  #imprimir, #salidaimprimir, #pie, #leyenda {
+  #datosvideo, #imprimir, #salidaimprimir, #pie, #leyenda {
     display: none !important;
   }
 
@@ -517,6 +507,7 @@ var colPosicion=6;
 var colGrupo=7; 
 var colUrl=8;
 var selVideo=5; // selector que tiene los videos
+var videoCargado; // el índice en videos del que está cargado (carga)
 
 /*
 function ponSelectores(a,b){
@@ -757,12 +748,19 @@ console.log('filtro c* : ',c0,c1,c2,c3,c4);
   ele.innerHTML=txt; // actualizar lista de videos del selector
 }
 
-function cambio(){ 
-// cambio de video por selector
-  carga(this.id.substr(1),this.value-1);
+function cambio(e){ 
+// cambio de video por selector: change, o click en una opción (también en la ya elegida, que
+// no da change)
+  if (e.type=='click' && e.target.tagName!='OPTION') return; // el clic que abre la lista (iOS)
+  if (this.value==='') return;
+  if (this.value-1!=videoCargado) carga(this.id.substr(1),this.value-1);
+  // en el móvil, a la pantalla del video
+  if (window.matchMedia('(max-width: 600px)').matches)
+    document.getElementById('cont2').scrollIntoView({behavior:'smooth'});
 }
 
 function carga(a,b){ 
+  videoCargado=b;
 // carga un video, llamado desde desde eventos y desde inicio
   
   // panel de informacion del video
@@ -1045,6 +1043,7 @@ function madeSelectores(){
   for (let j=0;j<nSel.length;j++){
     let el1=document.createElement('div');
     el1.className='selin';
+    el1.id='D'+j;   // la fila del selector (en el móvil sin D3 position y D4 state)
     pel.appendChild(el1);
     if (j<5){
       let el2=document.createElement('label');
@@ -1119,7 +1118,6 @@ function b(n){
 }
 
 function inicio(){
-  document.getElementById('irvideo').onclick=()=>document.getElementById('cont2').scrollIntoView({behavior:'smooth'});
   document.getElementById('irselectores').onclick=()=>document.getElementById('cont1').scrollIntoView({behavior:'smooth'});
 // imprime estrella de pasos
 	let cr='<br/>';
@@ -1155,6 +1153,7 @@ function inicio(){
       });
     }else{ // cambio en el selector de videos
       document.getElementById(n).addEventListener('change',cambio);      
+      document.getElementById(n).addEventListener('click',cambio);
     }
   }
    carga(0,0); // cargar el primer video de la lista
@@ -1198,7 +1197,6 @@ window.onload=async()=>{ if (await descifra()) inicio(); };
   	<div id='pie'>
   	      [<a target='_blank' href='https://tangopasionradio.com/'>tangopasion radio</a>][<a target='_blank' href='https://www.youtube.com/playlist?list=PLWDxvk52aZtNhYVrdlJtuxpYARuJZIKVc'>solos</a>][<a target='_blank' href='https://www.youtube.com/watch?v=w7NI04R4cGU&list=PLWDxvk52aZtPVNj5m38CD1wbCnNbAhpd3'>cantores</a>][<a target='_blank' href='https://www.youtube.com/watch?v=jGM2Ah0tShs&list=PLWDxvk52aZtOqk1MT9Oy62G6o00a6clSG'>tandas</a>][<a target='_blank' href='https://www.youtube.com/watch?v=qdRXB1_5rVE&list=PLWDxvk52aZtPw0BSroC3EC6h5Mle2iCeb'>orquestas</a>][<a href='https://www.youtube.com/@overjazzrecords/playlists' target='_blank'>overjazz</a>]
   	</div>	
-  	<div id='irvideo' class='barra-movil'>&#9660; VIDEO &#9660;</div>
 
 </div>
  
