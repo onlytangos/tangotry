@@ -2,6 +2,7 @@
 <html>
 <head>
 <meta charset="UTF-8">
+<title>TT</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>
 :root {
@@ -448,7 +449,7 @@ textarea::placeholder {
     width: 100px !important;   /* "position" entero */
     white-space: nowrap;
     flex-shrink: 0;
-    font-size: var(--fuenteG);
+    font-size: var(--fuenteX);   /* la de los selectores */
   }
 
   #S4,#S3,#S2,#S1,#S0 {
@@ -728,20 +729,12 @@ console.log('XXX:cambio');
     let c2=(grupos[s2v-1]==videos[j][colGrupo])||(s2v==0);
     let c3=(videos[j][colPosicion].includes(s3))||(s3v==0);
     let c4=(estados[s4v-1]==videos[j][colEstado])||(s4v==0);
-// resaltar la posicion seleccionada en el texto del option
-    txt3=s3;
-    if (c3){
-      txt3=videos[j][colPosicion];
-      txt3=txt3.replace(s3,"\u254F"+s3);  //utf8
-      txt3=txt3.replace("-\u254F","\u254F");            
-    }  
-    txt3=txt3.replaceAll('-','\u254E'); 
 // formar selector de videos por el filtro
 console.log('filtro s* : ',s0,s1,s2,s3,s4);
 console.log('filtro s*v : ',s0v,s1v,s2v,s3v,s4v);
 console.log('filtro c* : ',c0,c1,c2,c3,c4);
 	if( c0 && c1 && c2 && c3 && c4 ){
-      txt+='<option value="'+(j+1)+'">'+videos[j][colId]+' '+videos[j][colTema]+' '+txt3+'</option>';     
+      txt+='<option value="'+(j+1)+'">'+videos[j][colId]+' '+videos[j][colTema]+'</option>'; // id subject     
     }
   }
   let ele=document.getElementById('S'+selVideo); // videos 
@@ -767,13 +760,15 @@ function carga(a,b){
 let txt='';
 let txt1=videos[b][colUrl].split('/').pop();
 let txt2=parejasMapa.get(videos[b][colAutor]);
-txt+=videos[b][colId]+':'+txt2+'<br/>';   
-// el resto, seguido y separado por un blanco (la caja, la mitad de alta)
-txt+=['fi:'+txt1,
-      'su:'+videos[b][colTema],
-      'gr:'+videos[b][colGrupo],
-      'po:'+videos[b][colPosicion],
-      'st:'+videos[b][colEstado]].join(' ');
+// los campos vacíos no salen
+const lleno=v=>String(v??'').trim()!=='';
+txt+=videos[b][colId]+(lleno(txt2) ? ':'+txt2 : '')+'<br/>';   
+// el resto, seguido y separado por un blanco (la caja, la mitad de alta); position, la última
+txt+=[['fi',txt1],
+      ['su',videos[b][colTema]],
+      ['gr',videos[b][colGrupo]],
+      ['st',videos[b][colEstado]],
+      ['po',videos[b][colPosicion]]].filter(([,v])=>lleno(v)).map(([n,v])=>n+':'+v).join(' ');
 
   document.getElementById('datosvideo').innerHTML=txt; 
   seleActivo=parseInt(a);
@@ -997,7 +992,7 @@ function buscar(){
     var palabras = q.split(/\s+/).filter(function(p){ return p.length > 0; });
     var coincide = palabras.every(function(p){ return camposBusqueda.indexOf(p) !== -1; });
     if (coincide) {
-      txt += '<option value="'+(j+1)+'">'+v[colId]+' '+v[colTema]+' '+v[colPosicion]+'</option>';
+      txt += '<option value="'+(j+1)+'">'+v[colId]+' '+v[colTema]+'</option>'; // id subject
     }
   }
   var ele = document.getElementById('S'+selVideo);
@@ -1055,10 +1050,12 @@ function madeSelectores(){
     el3.id='S'+j;
     el1.appendChild(el3);
   }
-  document.getElementById('S'+selVideo).size = 12;
-  window.addEventListener('resize', function(){
-    document.getElementById('S'+selVideo).size = 12;
-  });
+  // líneas de la lista de clips: en el móvil, 8 más
+  const lineas=()=>{
+    document.getElementById('S'+selVideo).size = window.matchMedia('(max-width: 600px)').matches ? 18 : 10;
+  };
+  lineas();
+  window.addEventListener('resize', lineas);
 }
 
 function madeGrupos() {
