@@ -49,7 +49,7 @@ input.toggle + label {
   flex: 1;                /* los 4 se reparten todo el ancho */
   width: auto !important;
   height: 44px;
-  border-radius: 4px;
+  border-radius: 12px;
   background-color: #a9234f !important; /* inicial */
   color: var(--colorP);
   cursor: pointer;
@@ -158,7 +158,19 @@ html, body {
 #cont1{
 	width: 350px;
 	padding-top: 0;   /* TangoTry, arriba del todo */
-	overflow-y: auto; /* en PC, si no cabe en la pantalla, scroll en el panel (no se corta) */
+	display: flex;    /* arriba los controles; abajo, fijas, las cajas de #abajo */
+	flex-direction: column;
+	overflow: hidden;
+}
+#controles{
+	padding-top: 0;
+	height: auto;     /* era 580px fijo */
+	flex: 1 1 auto;
+	min-height: 0;
+	overflow-y: auto; /* en PC, si no cabe en la pantalla, scroll en los controles (no se corta) */
+}
+#abajo{
+	flex: none;
 }
 #cont2{
 	flex: 1; /* ajuste responsive al resto del ancho disponible */
@@ -219,10 +231,6 @@ html, body {
   border-radius: 50%;
   background: var(--colorP);
 }
-#controles{
-  padding-top: 0;
-  height: auto;        /* era 580px fijo; sin máximo: el panel 1 hace scroll */
-}
 #selectores{
 }
 #datosvideo{
@@ -247,7 +255,7 @@ html, body {
 	height: 26px;
 }
 #imprimir{
-	margin-top: 20px; /* separado de la caja de datos del video */
+	margin-top: 6px;  /* separado de los enlaces */
 	cursor:pointer;
 }
 #pie{
@@ -257,7 +265,8 @@ html, body {
 }
 #leyenda{
 	font-size:var(--fuenteP); 
-	width:100%;
+	width:332px;   /* como #imprimir */
+	margin:auto;
 	height:70px;
 	padding: 10px 10px 10px 30px;
 	background-color: var(--bg2);  
@@ -376,6 +385,12 @@ textarea::placeholder {
     min-height: 100vh;
     min-height: 100dvh;
     scroll-snap-align: start;
+    display: block;
+    overflow: visible;
+  }
+
+  #abajo {
+    display: none;
   }
 
   .barra-movil {
@@ -412,6 +427,7 @@ textarea::placeholder {
 
   #controles {
     max-height: none;
+    overflow: visible;
   }
 
   #cont2 {
@@ -763,11 +779,12 @@ let txt2=parejasMapa.get(videos[b][colAutor]);
 // los campos vacíos no salen
 const lleno=v=>String(v??'').trim()!=='';
 txt+=videos[b][colId]+(lleno(txt2) ? ':'+txt2 : '')+'<br/>';   
-// el resto, seguido y separado por un blanco (la caja, la mitad de alta); position, la última
-txt+=[['fi',txt1],
-      ['su',videos[b][colTema]],
+// el resto, seguido y separado por un blanco (la caja, la mitad de alta); fi, la penúltima;
+// position, la última
+txt+=[['su',videos[b][colTema]],
       ['gr',videos[b][colGrupo]],
       ['st',videos[b][colEstado]],
+      ['fi',txt1],
       ['po',videos[b][colPosicion]]].filter(([,v])=>lleno(v)).map(([n,v])=>n+':'+v).join(' ');
 
   document.getElementById('datosvideo').innerHTML=txt; 
@@ -1186,14 +1203,17 @@ window.onload=async()=>{ if (await descifra()) inicio(); };
 		<div id='titulo'>TangoTry <a href='https://www.facebook.com/profile.php?id=100093497583670' target='_blank' rel='noopener'>by KoKoTango</a></div>
 		<div id='selectores'></div>
 		<div id='datosvideo'></div>  
-		<div id='imprimir'>! click to print selection !</div>  
-		<div id='salidaimprimir'></div>  
 </div>
 	
-  	<div id='leyenda'></div> 
+<!-- enlaces, click to print y leyenda: fijos abajo del panel -->
+<div id='abajo'>
   	<div id='pie'>
   	      [<a target='_blank' href='https://tangopasionradio.com/'>tangopasion radio</a>][<a target='_blank' href='https://www.youtube.com/playlist?list=PLWDxvk52aZtNhYVrdlJtuxpYARuJZIKVc'>solos</a>][<a target='_blank' href='https://www.youtube.com/watch?v=w7NI04R4cGU&list=PLWDxvk52aZtPVNj5m38CD1wbCnNbAhpd3'>cantores</a>][<a target='_blank' href='https://www.youtube.com/watch?v=jGM2Ah0tShs&list=PLWDxvk52aZtOqk1MT9Oy62G6o00a6clSG'>tandas</a>][<a target='_blank' href='https://www.youtube.com/watch?v=qdRXB1_5rVE&list=PLWDxvk52aZtPw0BSroC3EC6h5Mle2iCeb'>orquestas</a>][<a href='https://www.youtube.com/@overjazzrecords/playlists' target='_blank'>overjazz</a>]
   	</div>	
+		<div id='imprimir'>! click to print selection !</div>  
+		<div id='salidaimprimir'></div>  
+  	<div id='leyenda'></div> 
+</div>
 
 </div>
  
