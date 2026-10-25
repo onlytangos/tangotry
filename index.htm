@@ -496,7 +496,13 @@ textarea::placeholder {
 
 <script>
 // datos.js nuevo usa listaParejas (objeto) y etiquetas en vez de parejasMapa (Map) y tema
-var parejasMapa, tema;
+var parejasMapa;
+// el nombre de una pareja: en listaParejas, completo ("manuela.rossi y juan.maliza": nombre.apellido, primero
+// la mujer); en el selector, solo los nombres de pila (pila: "manuela y juan"); en datosvideo, entero, con
+// espacios (completo: "manuela rossi y juan maliza")
+const pila = s => String(s ?? '').split(/\s+/).map(w => w.split('.')[0]).join(' ');
+const completo = s => String(s ?? '').replace(/\./g, ' ');
+var tema;
 </script>
 
 <script>
@@ -775,7 +781,7 @@ function carga(a,b){
   // panel de informacion del video
 let txt='';
 let txt1=videos[b][colUrl].split('/').pop();
-let txt2=parejasMapa.get(videos[b][colAutor]);
+let txt2=completo(parejasMapa.get(videos[b][colAutor]));
 // los campos vacíos no salen
 const lleno=v=>String(v??'').trim()!=='';
 txt+=videos[b][colId]+(lleno(txt2) ? ':'+txt2 : '')+'<br/>';   
@@ -991,20 +997,14 @@ function buscar(){
     cambio0();
     return;
   }
-  // buscar en todos los campos usados por los selectores:
-  // colAutor(3), colTema(5), colGrupo(7), colPosicion(6), colEstado(4)
+  // buscar en cualquier campo del video (id, tramo, pareja, estado, tema,
+  // posición, grupo, fichero) y en el nombre completo de la pareja
   var txt = '';
   for (var j = 0; j < videos.length; j++) {
     var v = videos[j];
-    // construir texto de búsqueda con los campos de los selectores
-    // pareja: buscar nombre completo via parejasMapa
-    var nombrePareja = (parejasMapa.get(v[colAutor]) || '') + ' ' + (v[colAutor] || '');
+    // pareja: añadir el nombre completo via parejasMapa
     var camposBusqueda = (
-      nombrePareja + ' ' +
-      (v[colTema]     || '') + ' ' +
-      (v[colGrupo]    || '') + ' ' +
-      (v[colPosicion] || '') + ' ' +
-      (v[colEstado]   || '')
+      v.join(' ') + ' ' + (parejasMapa.get(v[colAutor]) || '')
     ).toLowerCase();
     var palabras = q.split(/\s+/).filter(function(p){ return p.length > 0; });
     var coincide = palabras.every(function(p){ return camposBusqueda.indexOf(p) !== -1; });
@@ -1091,7 +1091,7 @@ function madeEstados() {
 
 function madeParejas(){
   parejasMapa.forEach(
-    (v,k)=>parejas.push(''+k+' '+v)
+    (v,k)=>parejas.push(''+k+' '+pila(v))   // el selector, solo los nombres de pila
   );
   parejas.sort();
   //console.log('parejas:',parejas);
@@ -1170,7 +1170,20 @@ function inicio(){
       document.getElementById(n).addEventListener('click',cambio);
     }
   }
+  nombresPareja(document.getElementById('S0'));
    carga(0,0); // cargar el primer video de la lista
+}
+
+// el selector de parejas (S0): desplegado, el nombre completo de cada una (completo); cerrado, la elegida
+// solo con los nombres de pila (pila). Un select muestra el mismo texto abierto y cerrado: se cambia al
+// abrirlo (focus, mousedown, touchstart) y al elegir o salir (change, blur). El código va delante siempre
+// (el filtro lo lee del texto: split(' ')[0])
+function nombresPareja(sel){
+  const texto = (o, f) => { const k = o.text.split(' ')[0]; return parejasMapa.has(k) ? k + ' ' + f(parejasMapa.get(k)) : o.text; };
+  const largos = () => { for (const o of sel.options) o.text = texto(o, completo); };
+  const cortos = () => { for (const o of sel.options) o.text = texto(o, pila); };
+  ['focus', 'mousedown', 'touchstart'].forEach(e => sel.addEventListener(e, largos));
+  ['change', 'blur'].forEach(e => sel.addEventListener(e, cortos));
 }
 
 async function descifra(){
