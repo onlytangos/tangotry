@@ -15,20 +15,6 @@
   --bg3: #333;       /* bg second var(--bg3) */
 }
 
-#busqueda-clear{
-  position: absolute;
-  right: 4px;
-  top: 0;
-  bottom: -8px;
-  display: none;
-  align-items: center;
-  cursor: pointer;
-  color: #888 !important;
-  font-size: 26px !important;
-  line-height: 1;
-  user-select: none;
-}
-
 #contenedor-botones {
   font-size:var(--fuenteG) !important;
   display: flex;
@@ -110,6 +96,7 @@ body{
 }
 div {
   scrollbar-color: var(--bg) var(--bg2);
+  padding: 2px;
 }
 div,select,a{
   box-sizing: border-box;
@@ -118,6 +105,7 @@ div,select,a{
   border-color: var(--bg3);
 }
 select {
+  display: inline-block;
   outline: none;
   -webkit-appearance: none;
   -moz-appearance: none;
@@ -133,13 +121,6 @@ label:not(.toggle-btn) {
   display: inline-flex;
   width: 60px;
   padding-left: 0px;
-}
-select{
-	display:inline-block;
-}
-div{
-  padding: 2px;
-
 }
 .selin{
 	width: 336px;
@@ -167,7 +148,12 @@ html, body {
 	height: auto;     /* era 580px fijo */
 	flex: 1 1 auto;
 	min-height: 0;
-	overflow-y: auto; /* en PC, si no cabe en la pantalla, scroll en los controles (no se corta) */
+	overflow-x: hidden;    /* sin scroll horizontal */
+	overflow-y: auto;      /* en PC, si no cabe en la pantalla, se mueve con la rueda o el dedo (no se corta)... */
+	scrollbar-width: none; /* ...pero sin barra de scroll (Firefox) */
+}
+#controles::-webkit-scrollbar{
+	display: none;         /* sin barra de scroll (Chrome, Safari) */
 }
 #abajo{
 	flex: none;
@@ -231,21 +217,27 @@ html, body {
   border-radius: 50%;
   background: var(--colorP);
 }
-#selectores{
-}
-#datosvideo{
-  color: white;
-}
 #datosvideo,#salidaimprimir,#imprimir{
 	font-size:var(--fuenteP);
 	margin:auto;
 	border:1px solid var(--bg3);
-	width:332px; 
+	width:332px;
 }
 #datosvideo{
+  color: white;
   font-size: var(--fuenteG); /* como el resto del texto (los selectores) */
-  height: auto;              /* el alto, el del contenido: */
-  overflow-wrap: anywhere;   /* lo largo sin blancos (fi, po) pasa a la línea siguiente */
+  line-height: 1.25;
+  height: calc(4 * 1.25em + 6px); /* siempre 4 líneas (+ el padding 2+2 y el borde 1+1) */
+  overflow: hidden;
+}
+/* las 4 líneas de datosvideo (carga): cada una en una sola línea; lo que no cabe se corta con "…" (entero,
+   en el title: al pasar el ratón); vacía, ocupa su línea igual */
+#datosvideo .dvlinea{
+  display: block;
+  height: 1.25em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 #salidaimprimir,#imprimir{
   overflow: hidden;
@@ -280,10 +272,6 @@ html, body {
   width: 334px;
   margin-bottom: 2px;
 }
-/* También funciona para textareas */
-textarea::placeholder {
-    color: #999999;
-}
 #busqueda{
   width: 334px;
   font-size: var(--fuenteG);
@@ -294,16 +282,19 @@ textarea::placeholder {
   background-color: var(--bg3);
   box-sizing: border-box;
 }
+/* la cruz que borra la búsqueda: se ve cuando hay algo escrito (buscar) */
 #busqueda-clear{
   position: absolute;
   right: 4px;
   top: 50%;
+  bottom: -8px;
   transform: translateY(-50%);
-  cursor: pointer;
-  color: var(--bg3);
-  font-size: 16px;
-  line-height: 1;
   display: none;
+  align-items: center;
+  cursor: pointer;
+  color: #888;
+  font-size: 26px;
+  line-height: 1;
   user-select: none;
 }
 #titulo{
@@ -329,17 +320,10 @@ textarea::placeholder {
   pointer-events: none; /* el clic llega al buscador */
   color: #888;
 }
-#busqueda-clear:hover{
-  color: var(--colorP);
-}
-#busqueda::placeholder{
-  color: var(--bg3);
-}
 #S5,#S5>option{
   width:100%;
   font-size:calc(var(--fuenteP) + 2px);
   scrollbar-width: thin;
-  overflow-y: none;  
 }
 #S5::-webkit-scrollbar {
   display: none;
@@ -347,22 +331,22 @@ textarea::placeholder {
 #L0,#L1,#L2,#L3,#L4{
 	width: 90px;
 }
-#C1,#C2,#C3,#C4,#C5,#C6{
-	width: 52px;
-	padding-left: 12px;
-}
-#player,#player2{
-	width: 100%;
-	height: 100%;
-}
 #player2{
+  width: 100%;
+  height: 100%;
   flex: 1;
-  min-height: 0; /* el video ocupa el resto bajo el slider */
+  min-height: 0; /* el video, arriba: ocupa el resto sobre el slider y los botones */
 }
 
 /* barra para volver del video a los selectores: solo en el móvil */
 .barra-movil{
   display: none;
+}
+
+/* en un móvil (esMovil(): la clase movil en <html>), sin el selector position, aunque la pantalla sea ancha
+   (en horizontal, o con "versión de escritorio") */
+html.movil #D3 {
+  display: none !important;
 }
 
 /* ===== RESPONSIVE MÓVIL ===== */
@@ -419,6 +403,8 @@ textarea::placeholder {
 
   #barra-slider {
     height: 44px;
+    width: 100%;
+    padding: 0;
   }
 
   #posicion {
@@ -434,20 +420,14 @@ textarea::placeholder {
     width: 100%;
     flex: none;
     height: 100vh;
-    height: 100dvh;   /* el player (botones, slider y video): una pantalla entera */
+    height: 100dvh;   /* el player (video, slider y botones): una pantalla entera */
     scroll-snap-align: start;
     margin-top: 0;
-    gap: 6px;   /* barra, botones, slider y video: el mismo margen que entre los botones */
+    gap: 6px;   /* barra, video, slider y botones: el mismo margen que entre los botones */
   }
 
   #player2 {
-    width: 100%;
     display: block;
-  }
-
-  #barra-slider {
-    width: 100%;
-    padding: 0;
   }
 
   #busqueda-wrap, #busqueda {
@@ -495,357 +475,181 @@ textarea::placeholder {
 <script src='datos.cifrados.js'></script>
 
 <script>
-// datos.js nuevo usa listaParejas (objeto) y etiquetas en vez de parejasMapa (Map) y tema
+// las parejas de datos.js (listaParejas), como Map: código → nombre
 var parejasMapa;
 // el nombre de una pareja: en listaParejas, completo ("manuela.rossi y juan.maliza": nombre.apellido, primero
 // la mujer); en el selector, solo los nombres de pila (pila: "manuela y juan"); en datosvideo, entero, con
 // espacios (completo: "manuela rossi y juan maliza")
 const pila = s => String(s ?? '').split(/\s+/).map(w => w.split('.')[0]).join(' ');
 const completo = s => String(s ?? '').replace(/\./g, ' ');
-var tema;
+// state y group: en videos solo el código (#x); en el selector, en datosvideo y en la búsqueda, #x-texto con
+// el texto de listaEstados / listaGrupos (state #0 → "#0-ready", group #0 → "#0-easy"). Un código sin texto
+// sale tal cual
+const textoCodigo = (c, lista) => { const m = /^#(\d+)$/.exec(String(c ?? '')); return m && lista[m[1]] !== undefined ? c + '-' + lista[m[1]] : String(c ?? ''); };
+const textoEstado = c => textoCodigo(c, listaEstados);
+const textoGrupo = c => textoCodigo(c, listaGrupos);
+// los códigos de una lista: ["easy","hard"] → ["#0","#1"]
+const codigos = lista => lista.map((t, i) => '#' + i);
+
+// ¿es un móvil (o una tablet)? Mira el aparato, no el ancho de la ventana (el diseño de móvil, el @media
+// max-width 600px, sí lo mira): un móvil en horizontal o con "versión de escritorio" también es móvil.
+//  - navigator.userAgentData.mobile (Chrome y Edge en Android)
+//  - el userAgent: Android, iPhone, iPad, iPod, Mobile...
+//  - un iPad con iPadOS 13 o más, que dice ser un Mac pero tiene pantalla táctil
+//  - si no, una pantalla táctil sin ratón: puntero grueso y sin hover
+function esMovil(){
+  const ua = navigator.userAgent || '';
+  if (navigator.userAgentData && navigator.userAgentData.mobile) return true;
+  if (/Android|iPhone|iPad|iPod|Mobile|Opera Mini|IEMobile/i.test(ua)) return true;
+  if (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1) return true;
+  return window.matchMedia('(pointer: coarse) and (hover: none)').matches;
+}
+// en un móvil, la clase movil en <html> (ya aquí, antes de pintar): el CSS html.movil quita lo que no va
+if (esMovil()) document.documentElement.classList.add('movil');
 </script>
 
 <script>
 // GLOBALES
-var figuras=[];
-var parejas=[];
-var estados=[];
-var grupos=[];
-var nSel=['couple','subject','group','position','state','clips'];
-var datos=[];
-var section = {start: 0,end:0};
-var local;
-var player,player2; 
-var z;
-var seleActivo; // ultimo id video cargado
-var todos=0;
-var timer0;
-var colId=0; 
-var colt1=1;
-var colt2=2;
-var colAutor=3;
-var colEstado=4;
-var colTema=5;
-var colPosicion=6;
-var colGrupo=7; 
-var colUrl=8;
-var selVideo=5; // selector que tiene los videos
-var videoCargado; // el índice en videos del que está cargado (carga)
+// las columnas de cada registro de videos (datos.js)
+const colId=0, colt1=1, colt2=2, colAutor=3, colEstado=4, colTema=5, colPosicion=6, colGrupo=7, colUrl=8;
+const selVideo=5;   // el selector con la lista de clips (S5); S0..S4, los filtros
+const nSel=['couple','subject','group','position','state','clips'];
+let datos=[];       // las opciones de cada filtro: [parejas, tema, grupos, figuras, estados]
+let textoBusqueda=[];  // por video, todo su texto en minúsculas, para buscar: se prepara una vez (inicio)
+let section={start:0, end:0};  // el tramo del clip cargado, en segundos
+let videoCargado;   // el índice en videos del que está cargado (carga)
+let video, bucle, slider;      // el <video>, el botón LOOP y el slider (inicio)
+const estrecha=window.matchMedia('(max-width: 600px)');  // pantalla estrecha: el diseño de móvil, como el @media
+const $=id=>document.getElementById(id);
 
-/*
-function ponSelectores(a,b){
-  for (var j=0;j<datos.length;j++){ 
-    var ele=document.getElementById('S'+j);
-    ele.selectedIndex=0;
-  }
-  document.getElementById('S'+a).selectedIndex=parseInt(b)+1;
-  seleActivo=a;
-}
-*/
+// los 5 filtros (S0..S4): la columna de videos que miran y cuándo casa la de un video con la opción elegida
+// (casa(op) prepara la opción una vez y da la prueba para la celda de cada video). Los usan el filtro
+// (cambio0) y el recuento ▹ de cada opción (creaSelector): siempre la misma regla
+const FILTROS=[
+  {col:colAutor,    casa:op=>{ const k=op.split(' ')[0]; return c=>c===k; }},              // couple: el código (AC), delante del nombre
+  {col:colTema,     casa:op=>c=>tieneEtiqueta(c,op)},                                     // subject: la etiqueta entera (cambio no es cambioFrente)
+  {col:colGrupo,    casa:op=>c=>c===op},                                                   // group: el código (#0)
+  {col:colPosicion, casa:op=>c=>c.includes(op)},                                           // position: dentro de la cadena (a24 está en *a24-b13)
+  {col:colEstado,   casa:op=>c=>c===op},                                                   // state: el código (#3)
+];
 
-function getNt(valor,texto,tipo){
-/*
-
-obtener cuanto en videos cumplen en valor del option
-cada selector es diferente
-datos=[0 parejas,1 tema,2 grupos,3 figuras,4 estados,5 videos]; 
-
-var colId=0; 
-var colt1=1;
-var colt2=2;
-var colAutor=3; couple parejas 0..z
-var colEstado=4; state
-var colTema=5; etiquetas subject
-var colPosicion=6; posiciones figuras
-var colGrupo=7; group 
-var colUrl=8;
-
-*/
-
-let tr=[3,5,7,6,4]; // tema=columna en videos
-let cnt=0; // contador
-let w=0; // valor a buscar en videos
-
-if (tipo==0){
-  w=texto.split(' ')[0];
-}else{
-  w=texto;  
+// ¿está la etiqueta e entera en c ("barrida.sacada": sacada sí, saca no)? Sin trocear c: va en un bucle por video
+function tieneEtiqueta(c,e){
+  for (let i=c.indexOf(e); i>=0; i=c.indexOf(e,i+1))
+    if ((i==0 || c[i-1]=='.') && (i+e.length==c.length || c[i+e.length]=='.')) return true;
+  return false;
 }
 
-for (let j=0;j<videos.length;j++){
-  if (tipo==0){
-    let v=videos[j][tr[tipo]];
-    if (w==v){cnt++}
-  }else{
-    let v=videos[j][tr[tipo]];
-    if (v.includes(w)){cnt++}
-  }
+// group y state: todos los códigos de su lista (aunque ningún video lo tenga aún: sale con ▹0) y los que
+// haya en videos
+const valoresCodigo=(lista,col)=>[...new Set([...codigos(lista), ...videos.map(v=>v[col])])].filter(x=>x!=='').sort();
 
-
-} 
-
-return cnt;
-
+// las opciones de cada filtro (datos) y el texto de búsqueda de cada video (textoBusqueda)
+function madeDatos(){
+  const parejas=[...parejasMapa].map(([k,v])=>k+' '+pila(v)).sort();   // el selector, solo los nombres de pila
+  const tema=[...etiquetas].sort();
+  const figuras=[...new Set(videos.flatMap(v=>v[colPosicion].split('-').map(x=>x.trim()).filter(x=>x)))].sort();  // posiciones
+  datos=[parejas, tema, valoresCodigo(listaGrupos,colGrupo), figuras, valoresCodigo(listaEstados,colEstado)];
+  // buscar: en cualquier campo del video, en el nombre completo de la pareja y en el texto de state y group
+  textoBusqueda=videos.map(v=>(v.join(' ')+' '+(parejasMapa.get(v[colAutor])||'')+' '+textoEstado(v[colEstado])+' '+textoGrupo(v[colGrupo])).toLowerCase());
 }
 
+// las opciones del filtro i (S0..S4): *todos* y cada valor con cuántos videos casan (▹); group y state, #x-texto
+function creaSelector(i){
+  const f=FILTROS[i];
+  const nombre=i==2 ? textoGrupo : i==4 ? textoEstado : x=>x;
+  const cuantos=op=>{ const es=f.casa(op); let n=0; for (const v of videos) if (es(v[f.col])) n++; return n; };
+  $('S'+i).innerHTML='<option value="0" selected="selected">*todos*</option>'+datos[i].map((op,k)=>
+    '<option value="'+(k+1)+'">'+nombre(op)+' ▹'+cuantos(op)+'</option>').join('');
+  $('L'+i).innerHTML=nSel[i];
+}
 
-function creaSelector(x){ 
-  if (x=='S'+selVideo){
-   cambio0();
-   return;
-  }
-  // nombres de las opciones
-  var ele=document.getElementById(x);
-  var txt='<option value="0" selected="selected">*todos*</option>';
-  seleActivo=parseInt(ele.id.substr(1));
-  datos[seleActivo].sort();
-  
-  for (let i in datos[seleActivo]){
-      var k=parseInt(i)+1;
-      txt+='<option value="'+k+'">'+datos[seleActivo][i]+' \u25B9'+getNt(k,datos[seleActivo][i],seleActivo)+'</option>';    
-  }
-  ele.innerHTML=txt;
-  // nombre de la etiqueta
-  var ele=document.getElementById('L'+seleActivo);
-  ele.innerHTML=nSel[seleActivo];
+// la lista de clips (S5) con estos videos (índices en videos): "id subject"; el value, el índice + 1
+function pintaClips(indices){
+  $('S'+selVideo).innerHTML=indices.map(j=>'<option value="'+(j+1)+'">'+videos[j][colId]+' '+videos[j][colTema]+'</option>').join('');
+}
+
+// los 5 filtros a *todos*
+function filtrosATodos(){
+  for (let i=0;i<5;i++) $('S'+i).selectedIndex=0;
+}
+
+// la búsqueda, vacía y sin la cruz
+function limpiaBusqueda(){
+  $('busqueda').value='';
+  $('busqueda-clear').style.display='none';
 }
 
 /* EVENTOS */
-function stopVideo() {
-  player.stopVideo();
-}
-
-function cambioVoz(){
-  //console.log('voz:',local);
-  if (local!=undefined) {
-    if (document.getElementById('voz').checked) {
-      document.getElementById("player2").muted=false;
-    }else{
-      document.getElementById("player2").muted=true;
-    }
-  }else{
-    if (document.getElementById('voz').checked){
-      player.muteOn();
-    }else{
-      player.muteOff();
-    }
-  }
-}
-
-function cambioPausa(){
-  //console.log('pausa:',local);
-  if (local!=undefined) {
-    if (document.getElementById('pausa').checked) {
-      document.getElementById("player2").pause();
-    }else{
-      document.getElementById("player2").play();
-    }
-  }else{
-    if (document.getElementById('pausa').checked){
-      player.pauseVideo();
-    }else{
-      player.playVideo();
-    }
-  }
-}
-
-function getPat(id){
-// retornar un campo de video dado el id
-  for (j=0;j<videos.length;j++){
-    if (videos[j][0]==id){
-      return videos[j][colUrl];
-    }
-  }
-  return '';
-}
-
-function evtImprimir(){
-  //console.log('nueva');
-  let texto='';
-  let txt=[];
-  let ele=document.getElementById('S'+selVideo);
-  for (i=0;i<ele.options.length;i++){
-    linea=ele.options[i].innerHTML.split(' ');
-    let x=getPat(linea[0]);
-    if (x!=''){
-      //console.log('imprimir:',linea,getPat(linea[0]));
-      txt.push(x);     
-    }
-  }
-  txt.sort();
-  for (i=0;i<txt.length;i++){
-    texto+=txt[i]+'<br/>';
-  }
-  document.getElementById("salidaimprimir").innerHTML='copiado portapapeles '+txt.length+'<br/>';
-  // recorrer el array , si esta en el selector
-  // id + nombre fichero + ini + fin
-  copyClip(txt.join('\n'));
-
-}
-
-function cambioVelo(){
-  //console.log('cambioVelo:',local)
-  if (local!=undefined){
-    //console.log(velo);    
-    // local
-    if (document.getElementById('velo').checked){
-     document.getElementById("player2").playbackRate=0.25;  
-    }else{
-     document.getElementById("player2").playbackRate=1;     
-    }
-  }else{
-    if (document.getElementById('velo').checked){
-      player.setPlaybackRate(0.25);
-    }else{
-       player.setPlaybackRate(1);     
-    }
-  }
-}
-
-function cargaTiemposYT(x,sele,n){
-  section.start=parseInt(datos[sele][n][colt1]);
-  section.end=parseInt(x*datos[sele][n][colt2]);
-}
-
-function cargaTiempos(a,b){
-  section.start=a;
-  section.end=b;
-}
-
-function getByValue(map,searchValue) {
-  for (let [key, value] of map.entries()) {
-    if (value===searchValue)
-      return key;
-  }
-}
-
+// la lista de clips (S5) según los filtros: los videos que casan con todos los elegidos (*todos*: cualquiera)
 function cambio0(){
-  document.getElementById('salidaimprimir').innerHTML='';
-// recargar selector de videos segun opciones
-// leer selectores de opciones
-console.log('XXX:cambio');
-  var sel0=document.getElementById('S0');
-  var sel1=document.getElementById('S1'); 
-  var sel2=document.getElementById('S2');
-  var sel3=document.getElementById('S3');
-  var sel4=document.getElementById('S4');
-  
-  var s0=sel0.options[sel0.selectedIndex].text;
-  var s0v=sel0.value; 
-  var s1=sel1.options[sel1.selectedIndex].text.split(' ')[0];
-  var s1v=sel1.value;  
-  var s2=sel2.options[sel2.selectedIndex].text;
-  var s2v=sel2.value;
-  var s3=sel3.options[sel3.selectedIndex].text.split(' ')[0];;
-  var s3v=sel3.value;  
-  var s4=sel4.options[sel4.selectedIndex].text;
-  var s4v=sel4.value; 
-
-  var txt='';
-  // iniciales de la pareja
-  var delimitador=' '; // en parejas 
-  var pr=s0.split(delimitador)[0];
-  for (j=0;j<videos.length;j++){  
-    let c0=(pr==videos[j][colAutor])||(s0v==0);
-    let c1=(videos[j][colTema].indexOf(s1)!=-1)||(s1v==0);  
-    let c2=(grupos[s2v-1]==videos[j][colGrupo])||(s2v==0);
-    let c3=(videos[j][colPosicion].includes(s3))||(s3v==0);
-    let c4=(estados[s4v-1]==videos[j][colEstado])||(s4v==0);
-// formar selector de videos por el filtro
-console.log('filtro s* : ',s0,s1,s2,s3,s4);
-console.log('filtro s*v : ',s0v,s1v,s2v,s3v,s4v);
-console.log('filtro c* : ',c0,c1,c2,c3,c4);
-	if( c0 && c1 && c2 && c3 && c4 ){
-      txt+='<option value="'+(j+1)+'">'+videos[j][colId]+' '+videos[j][colTema]+'</option>'; // id subject     
-    }
-  }
-  let ele=document.getElementById('S'+selVideo); // videos 
-  ele.innerHTML=txt; // actualizar lista de videos del selector
+  $('salidaimprimir').innerHTML='';
+  const activos=[];   // los filtros con una opción elegida: su columna y su prueba
+  FILTROS.forEach((f,i)=>{ const k=$('S'+i).selectedIndex; if (k>0) activos.push({col:f.col, es:f.casa(datos[i][k-1])}); });
+  const lista=[];
+  videos.forEach((v,j)=>{ if (activos.every(f=>f.es(v[f.col]))) lista.push(j); });
+  pintaClips(lista);
 }
 
-function cambio(e){ 
-// cambio de video por selector: change, o click en una opción (también en la ya elegida, que
-// no da change)
+// la búsqueda: los clips con todas las palabras escritas (en textoBusqueda); los filtros, a *todos*
+function buscar(){
+  const palabras=$('busqueda').value.trim().toLowerCase().split(/\s+/).filter(p=>p);
+  filtrosATodos();
+  if (!palabras.length){ cambio0(); return; }   // sin búsqueda: la lista entera
+  const lista=[];
+  textoBusqueda.forEach((t,j)=>{ if (palabras.every(p=>t.includes(p))) lista.push(j); });
+  pintaClips(lista);
+}
+
+// cambio de video por selector: change, o click en una opción (también en la ya elegida, que no da change)
+function cambio(e){
   if (e.type=='click' && e.target.tagName!='OPTION') return; // el clic que abre la lista (iOS)
   if (this.value==='') return;
-  if (this.value-1!=videoCargado) carga(this.id.substr(1),this.value-1);
-  // en el móvil, a la pantalla del video
-  if (window.matchMedia('(max-width: 600px)').matches)
-    document.getElementById('cont2').scrollIntoView({behavior:'smooth'});
+  if (this.value-1!=videoCargado) carga(this.value-1);
+  if (estrecha.matches) $('cont2').scrollIntoView({behavior:'smooth'});  // en el móvil, a la pantalla del video
 }
 
-function carga(a,b){ 
+function cambioVoz(){ video.muted=!$('voz').checked; }
+function cambioPausa(){ if ($('pausa').checked) video.pause(); else video.play(); }
+function cambioVelo(){ video.playbackRate=$('velo').checked ? 0.25 : 1; }
+
+// "click to print": copia al portapapeles las rutas de los clips de la lista (S5), ordenadas
+function evtImprimir(){
+  const rutas=[...$('S'+selVideo).options].map(o=>videos[o.value-1][colUrl]).sort();
+  $('salidaimprimir').innerHTML='copiado portapapeles '+rutas.length+'<br/>';
+  navigator.clipboard.writeText(rutas.join('\n'));
+}
+
+// carga el video b (índice en videos): su panel de datos, los botones como al empezar y el video
+function carga(b){
   videoCargado=b;
-// carga un video, llamado desde desde eventos y desde inicio
-  
-  // panel de informacion del video
-let txt='';
-let txt1=videos[b][colUrl].split('/').pop();
-let txt2=completo(parejasMapa.get(videos[b][colAutor]));
-// los campos vacíos no salen
-const lleno=v=>String(v??'').trim()!=='';
-txt+=videos[b][colId]+(lleno(txt2) ? ':'+txt2 : '')+'<br/>';   
-// el resto, seguido y separado por un blanco (la caja, la mitad de alta); fi, la penúltima;
-// position, la última
-txt+=[['su',videos[b][colTema]],
-      ['gr',videos[b][colGrupo]],
-      ['st',videos[b][colEstado]],
-      ['fi',txt1],
-      ['po',videos[b][colPosicion]]].filter(([,v])=>lleno(v)).map(([n,v])=>n+':'+v).join(' ');
-
-  document.getElementById('datosvideo').innerHTML=txt; 
-  seleActivo=parseInt(a);
-  document.getElementById('bucle').checked=true;
-  document.getElementById('pausa').checked=false;
-  document.getElementById('velo').checked=false;
-  document.getElementById('voz').checked=false;
-  local=videos[b][4]; // local o remoto !! true => estado
-  resetVideos();   
-  if (local!=undefined) {
-    var x = document.getElementById("player2"); // abre ventana
-    x.style='display:innerHTML';  
-    cargaTiempos(videos[b][colt1],videos[b][colt2])   
-    cargaVideoLocal(
-      videos[b][colUrl],
-      section.start,section.end)
-  }
-  else {
-  // dejaremos de usar online
-/*
-var x = document.getElementById("player");
-    x.style='display:innerHTML';    
-    cargaTiemposYT(1,seleActivo,b);
-    cargaVideoYT(videos[b][3],section.start,section.end);
-*/
-}
-  if (timer0!=undefined){clearTimeout(timer0);}
-  timer0=setInterval(loopTimer,100);
+  const v=videos[b];
+  const fichero=v[colUrl].split('/').pop();
+  const pareja=completo(parejasMapa.get(v[colAutor]));
+  // 4 líneas, siempre (la caja no cambia de alto): id:pareja / su / gr st / fi po. Un campo vacío no
+  // sale; si la línea se queda sin nada, queda en blanco. Lo largo se corta con "…" (CSS); entera, en el title
+  const lleno=x=>String(x??'').trim()!=='';
+  const campo=(n,x)=>lleno(x) ? n+':'+x : '';
+  const juntos=(...c)=>c.filter(lleno).join(' ');
+  $('datosvideo').innerHTML=[v[colId]+(lleno(pareja) ? ':'+pareja : ''),
+     campo('su',v[colTema]),
+     juntos(campo('gr',textoGrupo(v[colGrupo])),campo('st',textoEstado(v[colEstado]))),
+     juntos(campo('fi',fichero),campo('po',v[colPosicion]))]
+    .map(l=>'<span class="dvlinea" title="'+l.replace(/"/g,'&quot;')+'">'+l+'</span>').join('');
+  bucle.checked=true;
+  $('pausa').checked=false;
+  $('velo').checked=false;
+  $('voz').checked=false;
+  // el tramo: en datos.js los tiempos son texto ("000", "999")
+  section={start:Number(v[colt1])||0, end:Number(v[colt2])};
+  cargaVideoLocal(v[colUrl]);
 }
 
+// cada 100 ms: al pasar del final del tramo, vuelta al principio (en LOOP), y el slider al día
 function loopTimer(){
-// unico timer 
-// analiza si el video llego al final
-// si es asi vuelta al inicio
-  var bucle=document.getElementById('bucle').checked;
-  if (local!=undefined){ // local
-    var x=document.getElementById("player2");
-    if (bucle && x.currentTime>section.end) x.currentTime=section.start;
-    actualizaSlider(x);
-  }else{ // YT
-  //console.log("YT",player.getCurrentTime(),section.end);    
-//    if (bucle && player.getCurrentTime()>section.end) player.seekTo(section.start);
-  }
+  if (bucle.checked && video.currentTime>section.end) video.currentTime=section.start;
+  actualizaSlider();
 }
-
-/*
-function cargaVideoYT(vid,a,b){
-  player.loadVideoById(vid,a);  
-}
-
-function loopYT() {
-  player.seekTo(section.start);
-}
-*/
 
 // copia en memoria (blob) de los últimos videos: con el video entero ya
 // descargado, mover el slider no espera a la red y es fluido. Mientras se
@@ -871,45 +675,42 @@ function cacheVideo(vid){
 }
 
 var videoActual=''; // url del video cargado (no la del blob)
-function cargaVideoLocal(vid,a,b){
-  var x = document.getElementById("player2");  
+function cargaVideoLocal(vid){
   videoActual=vid;
-  x.src=cacheVideos.get(vid)||vid;
+  video.src=cacheVideos.get(vid)||vid;
   if (!cacheVideos.has(vid)){
     cacheVideo(vid).then(function(u){
       if (videoActual!=vid) return; // ya se ha cambiado de video
-      var t=x.currentTime, parado=x.paused;
-      x.src=u;
-      x.currentTime=t;
-      x.playbackRate=document.getElementById('velo').checked?0.25:1;
-      if (!parado) x.play();
+      var t=video.currentTime, parado=video.paused;
+      video.src=u;
+      video.currentTime=t;
+      video.playbackRate=$('velo').checked?0.25:1;
+      if (!parado) video.play();
     }).catch(function(){});
   }
-  x.controls=false; // sin los controles del navegador: los de la página
-  x.currentTime=section.start;
-  x.loop=true; 
-  x.muted=true; 
-  x.playbackRate=1;  
-  x.play();
+  video.controls=false; // sin los controles del navegador: los de la página
+  video.currentTime=section.start;
+  video.loop=true;
+  video.muted=true;
+  video.playbackRate=1;
+  video.play();
 }
 
 // tramo del clip: [inicio, fin] en segundos, recortado a la duración real
-// (en datos.js los tiempos son texto, p.ej. "000" y "999")
-function tramo(x){
-  var ini=Number(section.start)||0;
-  var fin=Number(section.end);
-  if (!(fin>ini) || fin>x.duration) fin=x.duration;
+function tramo(){
+  var ini=section.start, fin=section.end;
+  if (!(fin>ini) || fin>video.duration) fin=video.duration;
   return {ini: ini, fin: fin};
 }
 
 // mover el slider según la posición del video (salvo si se está arrastrando)
 var arrastrando=false;
-function actualizaSlider(x){
+function actualizaSlider(){
   if (arrastrando) return;
-  var t=tramo(x);
+  var t=tramo();
   if (!(t.fin>t.ini)) return;
-  var v=(x.currentTime-t.ini)/(t.fin-t.ini)*1000;
-  document.getElementById('posicion').value=Math.max(0,Math.min(1000,v));
+  var v=(video.currentTime-t.ini)/(t.fin-t.ini)*1000;
+  slider.value=Math.max(0,Math.min(1000,v));
 }
 
 // mover el video según el slider. Mientras se arrastra: un seek cada vez (el
@@ -917,114 +718,52 @@ function actualizaSlider(x){
 // fastSeek (al fotograma clave más cercano) si el navegador lo tiene; al
 // soltar, el punto exacto y sigue si no estaba parado
 var seekPendiente=null, seguiaAntes=false;
-function posSlider(x){
-  var t=tramo(x);
+function posSlider(){
+  var t=tramo();
   if (!(t.fin>t.ini)) return null;
-  return t.ini+document.getElementById('posicion').value/1000*(t.fin-t.ini);
+  return t.ini+slider.value/1000*(t.fin-t.ini);
 }
-function seek(x,p,rapido){
-  if (rapido && x.fastSeek) x.fastSeek(p); else x.currentTime=p;
+function seek(p,rapido){
+  if (rapido && video.fastSeek) video.fastSeek(p); else video.currentTime=p;
 }
 function cambioPosicion(){
-  if (local==undefined) return;
-  var x=document.getElementById("player2");
-  var p=posSlider(x);
+  var p=posSlider();
   if (p==null) return;
-  if (x.seeking){ seekPendiente=p; return; }
-  seek(x,p,true);
+  if (video.seeking){ seekPendiente=p; return; }
+  seek(p,true);
 }
 function empiezaArrastre(){
-  if (arrastrando || local==undefined) return;
+  if (arrastrando) return;
   arrastrando=true;
-  var x=document.getElementById("player2");
-  seguiaAntes=!x.paused;
-  x.pause();
+  seguiaAntes=!video.paused;
+  video.pause();
 }
 function terminaArrastre(){
   if (!arrastrando) return;
   arrastrando=false;
   seekPendiente=null;
-  if (local==undefined) return;
-  var x=document.getElementById("player2");
-  var p=posSlider(x);
-  if (p!=null) x.currentTime=p;
-  if (seguiaAntes && !document.getElementById('pausa').checked) x.play();
+  var p=posSlider();
+  if (p!=null) video.currentTime=p;
+  if (seguiaAntes && !$('pausa').checked) video.play();
 }
 function preparaSlider(){
-  var s=document.getElementById('posicion');
-  s.addEventListener('pointerdown',empiezaArrastre);
-  s.addEventListener('touchstart',empiezaArrastre,{passive:true});
-  s.addEventListener('input',function(){ empiezaArrastre(); cambioPosicion(); });
+  slider.addEventListener('pointerdown',empiezaArrastre);
+  slider.addEventListener('touchstart',empiezaArrastre,{passive:true});
+  slider.addEventListener('input',function(){ empiezaArrastre(); cambioPosicion(); });
   ['pointerup','pointercancel','touchend','touchcancel','change'].forEach(function(e){
-    s.addEventListener(e,terminaArrastre);
+    slider.addEventListener(e,terminaArrastre);
   });
-  document.getElementById('player2').addEventListener('seeked',function(){
+  video.addEventListener('seeked',function(){
     if (seekPendiente==null || !arrastrando) return;
     var p=seekPendiente; seekPendiente=null;
-    seek(this,p,true);
+    seek(p,true);
   });
 }
 
-function loopLocal(){
-  var x = document.getElementById("player2");
-  x.currentTime=section.start;
-}
-
-function resetVideos(){
-  resetVideo();
-  resetVideoLocal();
-}
-
-function resetVideoLocal(){
-  var x = document.getElementById("player2");
-  x.style='display:none';
-  x.src='';
-  x.controls=false;
-}
-
-function resetVideo(){
-  var x = document.getElementById("player");
-  x.style='display:none';
-}
-
-function buscar(){
-  var q = document.getElementById('busqueda').value.trim().toLowerCase();
-  if (q === '') {
-    // sin búsqueda: restaurar todos los selectores al estado normal
-    for (var j = 0; j < 5; j++) {
-      document.getElementById('S'+j).selectedIndex = 0;
-    }
-    cambio0();
-    return;
-  }
-  // buscar en cualquier campo del video (id, tramo, pareja, estado, tema,
-  // posición, grupo, fichero) y en el nombre completo de la pareja
-  var txt = '';
-  for (var j = 0; j < videos.length; j++) {
-    var v = videos[j];
-    // pareja: añadir el nombre completo via parejasMapa
-    var camposBusqueda = (
-      v.join(' ') + ' ' + (parejasMapa.get(v[colAutor]) || '')
-    ).toLowerCase();
-    var palabras = q.split(/\s+/).filter(function(p){ return p.length > 0; });
-    var coincide = palabras.every(function(p){ return camposBusqueda.indexOf(p) !== -1; });
-    if (coincide) {
-      txt += '<option value="'+(j+1)+'">'+v[colId]+' '+v[colTema]+'</option>'; // id subject
-    }
-  }
-  var ele = document.getElementById('S'+selVideo);
-  ele.innerHTML = txt;
-  // resetear selectores de filtro para no interferir
-  for (var j = 0; j < 5; j++) {
-    document.getElementById('S'+j).selectedIndex = 0;
-  }
-}
-
+// los selectores: la búsqueda arriba, y una fila por selector (label + select)
 function madeSelectores(){
-  var pel=document.getElementById('selectores');
-  // caja de búsqueda encima del primer selector
+  var pel=$('selectores');
   var elBusq = document.createElement('div');
-  elBusq.placeholder='buscar..';
   elBusq.id = 'busqueda-wrap';
   elBusq.className = 'selin';
   var inp = document.createElement('input');
@@ -1036,18 +775,13 @@ function madeSelectores(){
   lupa.id = 'busqueda-lupa';
   lupa.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="10" cy="10" r="7"/><path d="M15 15l6 6"/></svg>';
   inp.addEventListener('input', function(){
-    document.getElementById('busqueda-clear').style.display = this.value ? 'block' : 'none';
+    $('busqueda-clear').style.display = this.value ? 'block' : 'none';
     buscar();
   });
   var clr = document.createElement('span');
   clr.id = 'busqueda-clear';
   clr.innerHTML = '✕';
-  clr.addEventListener('click', function(){
-    document.getElementById('busqueda').value = '';
-    this.style.display = 'none';
-    for (var j = 0; j < 5; j++) document.getElementById('S'+j).selectedIndex = 0;
-    cambio0();
-  });
+  clr.addEventListener('click', function(){ limpiaBusqueda(); filtrosATodos(); cambio0(); });
   elBusq.appendChild(lupa);
   elBusq.appendChild(inp);
   elBusq.appendChild(clr);
@@ -1055,76 +789,22 @@ function madeSelectores(){
   for (let j=0;j<nSel.length;j++){
     let el1=document.createElement('div');
     el1.className='selin';
-    el1.id='D'+j;   // la fila del selector (en el móvil sin D3 position y D4 state)
+    el1.id='D'+j;   // la fila del selector (en pantalla estrecha sin D3 position y D4 state; en un móvil, esMovil, sin D3)
     pel.appendChild(el1);
     if (j<5){
       let el2=document.createElement('label');
       el2.id='L'+j;
-      el2.for='S'+j;
-      el1.appendChild(el2);     
+      el2.htmlFor='S'+j;
+      el1.appendChild(el2);
     }
-    let el3=document.createElement('select');    
+    let el3=document.createElement('select');
     el3.id='S'+j;
     el1.appendChild(el3);
   }
-  // líneas de la lista de clips: en el móvil, 8 más
-  const lineas=()=>{
-    document.getElementById('S'+selVideo).size = window.matchMedia('(max-width: 600px)').matches ? 18 : 10;
-  };
+  // líneas de la lista de clips: en pantalla estrecha, 8 más
+  const lineas=()=>{ $('S'+selVideo).size = estrecha.matches ? 18 : 10; };
   lineas();
-  window.addEventListener('resize', lineas);
-}
-
-function madeGrupos() {
-	grupos = [...new Set(videos
-		.map(i=>i[colGrupo])
-		.filter(v=>v!=='') )]
-	.sort((a, b) => a - b);
-}
-
-function madeEstados() {
-	estados = [...new Set(videos
-		.map(i=>i[colEstado])
-		.filter(v=>v!=='') )]
-	.sort((a, b) => a - b);
-}
-
-function madeParejas(){
-  parejasMapa.forEach(
-    (v,k)=>parejas.push(''+k+' '+pila(v))   // el selector, solo los nombres de pila
-  );
-  parejas.sort();
-  //console.log('parejas:',parejas);
-}
-
-function madeFiguras(){ // posiciones
-  for (let j=0;j<videos.length;j++){
-    //console.log(videos[j]);
-  	let v=videos[j][colPosicion];
-  	if (v!=''){
-      let cadena=v.trim().split('-');
-      //if (cadena!=''){
-        const resultado = [];
-        cadena.forEach(cadena => {
-            resultado.push(...cadena.split("-"));
-         });  
-        const limpias = [...cadena, ...resultado]
-        .map(x => x.trim())
-        .filter(x => x.length > 0);
-          figuras.push(...limpias);     
-          let a=figuras[figuras.length-1];
-      //}
-  	}
-  }
-  figuras = [...new Set(figuras)];
-  figuras.sort();
-  //console.log('figuras :',figuras);
-}
-
-function copyClip(texto){
-  //console.log('copyClip');
-  navigator.clipboard.writeText(texto);
-  return;
+  if (estrecha.addEventListener) estrecha.addEventListener('change', lineas); else estrecha.addListener(lineas);
 }
 
 function b(n){
@@ -1132,52 +812,38 @@ function b(n){
 }
 
 function inicio(){
-  document.getElementById('irselectores').onclick=()=>document.getElementById('cont1').scrollIntoView({behavior:'smooth'});
-// imprime estrella de pasos
-	let cr='<br/>';
-	let txt=b(11)+'1'+b(9)+'2'+cr+b(5)+'open 7'+b(3)+'5o0c6'+b(3)+'8 close'+cr+b(11)+'3'+b(9)+'4'+cr;
-	document.getElementById('leyenda').innerHTML=txt;
-// crear datos  
-//console.log('tema1',tema);
-  madeParejas();
-  madeGrupos();
-  madeFiguras();
-  madeEstados();
-  datos=[parejas,tema,grupos,figuras,estados,videos]; 
-  
-// crear select
+  video=$('player2'); bucle=$('bucle'); slider=$('posicion');
+  $('irselectores').onclick=()=>$('cont1').scrollIntoView({behavior:'smooth'});
+  // la estrella de pasos
+  const cr='<br/>';
+  $('leyenda').innerHTML=b(11)+'1'+b(9)+'2'+cr+b(5)+'open 7'+b(3)+'5o0c6'+b(3)+'8 close'+cr+b(11)+'3'+b(9)+'4'+cr;
+  madeDatos();
   madeSelectores();
-// eventos
-  document.getElementById('imprimir').addEventListener('click',evtImprimir);
-  document.getElementById('velo').addEventListener('change',cambioVelo); 
-  document.getElementById('pausa').addEventListener('change',cambioPausa);
-  document.getElementById('voz').addEventListener('change',cambioVoz);
+  // eventos
+  $('imprimir').addEventListener('click',evtImprimir);
+  $('velo').addEventListener('change',cambioVelo);
+  $('pausa').addEventListener('change',cambioPausa);
+  $('voz').addEventListener('change',cambioVoz);
   preparaSlider();
-  document.getElementById('player2').addEventListener('click',function(){
-    document.getElementById('pausa').click();
-  });
-// crear options y eventos del selector
-  for (var j=0;j<datos.length;j++){
-    var n='S'+j;   
-    creaSelector(n); // id
-    if (j<5){ // cambio en el filtro algun selector del filtro
-      document.getElementById(n).addEventListener('change', function(){
-        document.getElementById('busqueda').value = '';
-        cambio0();
-      });
-    }else{ // cambio en el selector de videos
-      document.getElementById(n).addEventListener('change',cambio);      
-      document.getElementById(n).addEventListener('click',cambio);
-    }
+  video.addEventListener('click',()=>$('pausa').click());
+  // los filtros: sus opciones; al cambiar uno, fuera la búsqueda y la lista según los filtros
+  for (let i=0;i<5;i++){
+    creaSelector(i);
+    $('S'+i).addEventListener('change',()=>{ limpiaBusqueda(); cambio0(); });
   }
-  nombresPareja(document.getElementById('S0'));
-   carga(0,0); // cargar el primer video de la lista
+  // la lista de clips: entera; al elegir uno, se carga
+  cambio0();
+  $('S'+selVideo).addEventListener('change',cambio);
+  $('S'+selVideo).addEventListener('click',cambio);
+  nombresPareja($('S0'));
+  carga(0);   // el primer video de la lista
+  setInterval(loopTimer,100);   // un único temporizador para el bucle y el slider
 }
 
 // el selector de parejas (S0): desplegado, el nombre completo de cada una (completo); cerrado, la elegida
 // solo con los nombres de pila (pila). Un select muestra el mismo texto abierto y cerrado: se cambia al
 // abrirlo (focus, mousedown, touchstart) y al elegir o salir (change, blur). El código va delante siempre
-// (el filtro lo lee del texto: split(' ')[0])
+// (el filtro couple lo compara con split(' ')[0])
 function nombresPareja(sel){
   const texto = (o, f) => { const k = o.text.split(' ')[0]; return parejasMapa.has(k) ? k + ' ' + f(parejasMapa.get(k)) : o.text; };
   const largos = () => { for (const o of sel.options) o.text = texto(o, completo); };
@@ -1193,8 +859,8 @@ async function descifra(){
 		const datos=bytes(DATOS_CIFRADOS);
 		const clave=await crypto.subtle.importKey('raw',bytes(k.replace(/-/g,'+').replace(/_/g,'/')),'AES-GCM',false,['decrypt']);
 		const texto=await crypto.subtle.decrypt({name:'AES-GCM',iv:datos.slice(0,12)},clave,datos.slice(12));
-		(0,eval)(new TextDecoder().decode(texto));   // var listaParejas, etiquetas, videos
-		parejasMapa=new Map(Object.entries(listaParejas)); tema=etiquetas;
+		(0,eval)(new TextDecoder().decode(texto));   // var listaParejas, etiquetas, listaEstados, listaGrupos, videos
+		parejasMapa=new Map(Object.entries(listaParejas));
 		return true;
 	} catch(e){
 		document.body.textContent=k ? 'la clave de la url no es válida' : 'falta la clave en la url (#k=...)';
@@ -1232,6 +898,11 @@ window.onload=async()=>{ if (await descifra()) inicio(); };
  
    <div id='cont2'>
      <div id='irselectores' class='barra-movil'>&#9650; SELECTORS &#9650;</div>
+     <!-- de arriba abajo: video, slider (cursor) y botones -->
+     <video id='player2' playsinline disablepictureinpicture></video>
+     <div id='barra-slider'>
+       <input type='range' id='posicion' min='0' max='1000' value='0'>
+     </div>
      <div id="contenedor-botones">
         <input type="checkbox" id="velo" class="toggle">
         <label for="velo" class="toggle-btn">
@@ -1257,11 +928,6 @@ window.onload=async()=>{ if (await descifra()) inicio(); };
           <span class="off">SOUND</span>
         </label>
      </div>
-     <div id='barra-slider'>
-       <input type='range' id='posicion' min='0' max='1000' value='0'>
-     </div>
-     <video id='player2' playsinline disablepictureinpicture></video> <!-- 1. The <iframe> (and video player) will replace this <div> tag. -->
-    <div id="player"></div>
    </div>
 
  
