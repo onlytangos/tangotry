@@ -174,10 +174,14 @@ html, body {
   justify-content: center;
   align-items: center;
 }
+/* el slider, arriba de la barra: abajo, la franja de 10 px de los marcadores, sin que el botón llegue a ella (el usuario:
+   «cursor circulo a cuadrado, que no quede tampoco por la linea de marcadores»); antes, de 32 px en el centro */
 #posicion{
   width: 100%;
-  height: 32px;
+  height: 24px;
   margin: 0;
+  align-self: flex-start;
+  margin-top: 1px;
   accent-color: var(--colorP);
   cursor: pointer;
   touch-action: none; /* arrastrar con el dedo no desplaza la página */
@@ -185,19 +189,28 @@ html, body {
   appearance: none;
   background: transparent;
 }
+/* los marcadores del video (los tiempos de su secuencia en app.dj/proyect.json; solo en local): triángulos naranjas
+   abajo de la barra del slider, en su punto del tramo; al pulsarlos, el video va a ese punto */
+#barra-slider{ position: relative; }
+/* una franja de 10 px abajo de la barra, no la barra entera: encima de todo el slider (inset: 0), Chrome y Brave dejaban
+   de pintar el slider (el usuario: «no aperece el cursor del video ??») */
+#marcas{ position: absolute; left: 0; right: 0; bottom: 0; height: 10px; pointer-events: none; }
+.marca{ position: absolute; bottom: 0; width: 14px; height: 10px; margin-left: -7px; clip-path: polygon(50% 0, 100% 100%, 0 100%);
+  background: #E8A33D; pointer-events: auto; cursor: pointer; }
+.marca:hover{ background: #FFDD00; }
 /* slider: barra con las puntas redondas y botón redondo (Chrome/Safari y Firefox) */
 #posicion::-webkit-slider-runnable-track{
   height: 8px;
   border-radius: 4px;
   background: #555;   /* se distingue del fondo gris oscuro */
 }
-#posicion::-webkit-slider-thumb{
+#posicion::-webkit-slider-thumb{   /* cuadrado (antes, un círculo de 26 px) */
   -webkit-appearance: none;
-  width: 26px;
-  height: 26px;
-  margin-top: -9px;   /* centrado en la barra: (8 - 26) / 2 */
+  width: 20px;
+  height: 20px;
+  margin-top: -6px;   /* centrado en la barra: (8 - 20) / 2 */
   border: none;
-  border-radius: 50%;
+  border-radius: 2px;
   background: var(--colorP);
 }
 #posicion::-moz-range-track{
@@ -211,10 +224,10 @@ html, body {
   background: var(--colorP);
 }
 #posicion::-moz-range-thumb{
-  width: 26px;
-  height: 26px;
+  width: 20px;
+  height: 20px;
   border: none;
-  border-radius: 50%;
+  border-radius: 2px;
   background: var(--colorP);
 }
 #datosvideo,#salidaimprimir,#imprimir{
@@ -227,7 +240,7 @@ html, body {
   color: white;
   font-size: var(--fuenteG); /* como el resto del texto (los selectores) */
   line-height: 1.25;
-  height: calc(4 * 1.25em + 6px); /* siempre 4 líneas (+ el padding 2+2 y el borde 1+1) */
+  height: calc(5 * 1.25em + 6px); /* siempre 5 líneas (el usuario: «datosvideo a 5 lineas fijas»; + el padding 2+2 y el borde 1+1) */
   overflow: hidden;
 }
 /* las 4 líneas de datosvideo (carga): cada una en una sola línea; lo que no cabe se corta con "…" (entero,
@@ -512,6 +525,8 @@ if (esMovil()) document.documentElement.classList.add('movil');
 // GLOBALES
 // las columnas de cada registro de videos (datos.js)
 const colId=0, colt1=1, colt2=2, colAutor=3, colEstado=4, colTema=5, colPosicion=6, colGrupo=7, colUrl=8;
+// colAutor no está en datos.js: es el código de la pareja, las 2 primeras letras del id (AC000 → AC); se mete aquí
+videos.forEach(v=>v.splice(colAutor,0,v[colId].slice(0,2)));
 const selVideo=5;   // el selector con la lista de clips (S5); S0..S4, los filtros
 const nSel=['couple','subject','group','position','state','clips'];
 let datos=[];       // las opciones de cada filtro: [parejas, tema, grupos, figuras, estados]
@@ -527,12 +542,15 @@ const $=id=>document.getElementById(id);
 // (cambio0) y el recuento ▹ de cada opción (creaSelector): siempre la misma regla
 const FILTROS=[
   {col:colAutor,    casa:op=>{ const k=op.split(' ')[0]; return c=>c===k; }},              // couple: el código (AC), delante del nombre
-  {col:colTema,     casa:op=>c=>tieneEtiqueta(c,op)},                                     // subject: la etiqueta entera (cambio no es cambioFrente)
+  {col:colTema,     casa:op=>{ const e=sinLetra(op); return c=>tieneEtiqueta(c,e); }},     // subject: la etiqueta entera (cambio no es cambioFrente), sin su letra de figura
   {col:colGrupo,    casa:op=>c=>c===op},                                                   // group: el código (#0)
   {col:colPosicion, casa:op=>c=>c.includes(op)},                                           // position: dentro de la cadena (a24 está en *a24-b13)
   {col:colEstado,   casa:op=>c=>c===op},                                                   // state: el código (#3)
 ];
 
+// una etiqueta de etiquetas sin su letra de figura (el usuario, 2026-11-14: «busca cada una en etiquetas y añade su letra L al
+// final de la etiqueta como (L)»: sacada(S), gancho(G)...): en los videos va sin ella (subject: barrida.sacada)
+const sinLetra=e=>e.replace(/\([A-Z]\)$/,'');
 // ¿está la etiqueta e entera en c ("barrida.sacada": sacada sí, saca no)? Sin trocear c: va en un bucle por video
 function tieneEtiqueta(c,e){
   for (let i=c.indexOf(e); i>=0; i=c.indexOf(e,i+1))
@@ -626,15 +644,20 @@ function carga(b){
   const v=videos[b];
   const fichero=v[colUrl].split('/').pop();
   const pareja=completo(parejasMapa.get(v[colAutor]));
-  // 4 líneas, siempre (la caja no cambia de alto): id:pareja / su / gr st / fi po. Un campo vacío no
-  // sale; si la línea se queda sin nada, queda en blanco. Lo largo se corta con "…" (CSS); entera, en el title
+  // 5 líneas fijas (la caja no cambia de alto): los dos de la pareja, uno en cada línea, sin la y (el usuario: «rompe la
+  // linea por el y , o mejor quita el y»; uno solo, la segunda en blanco) / group state / fichero / posiciones, sin los nombres
+  // delante, sin el id ni el subject, que ya están en la línea elegida de la lista (el usuario, 2026-11-14: «haz una
+  // quinta linea en datosvideo para las posiciones, elimina po:», «quita del display de datos video tb fi:», «tb gr:
+  // st:», «tb su:», «quita el id y el subject es redundante ya esta en la linea seleccionada»; antes, id:pareja / su: /
+  // gr: st: / fi: po:). Un campo vacío no sale; si la línea se queda sin nada, queda en blanco. Lo largo se corta con
+  // "…" (CSS); entera, en el title
   const lleno=x=>String(x??'').trim()!=='';
-  const campo=(n,x)=>lleno(x) ? n+':'+x : '';
   const juntos=(...c)=>c.filter(lleno).join(' ');
-  $('datosvideo').innerHTML=[v[colId]+(lleno(pareja) ? ':'+pareja : ''),
-     campo('su',v[colTema]),
-     juntos(campo('gr',textoGrupo(v[colGrupo])),campo('st',textoEstado(v[colEstado]))),
-     juntos(campo('fi',fichero),campo('po',v[colPosicion]))]
+  const p=lleno(pareja) ? String(pareja) : '', y=p.indexOf(' y ');
+  $('datosvideo').innerHTML=[y<0 ? p : p.slice(0,y), y<0 ? '' : p.slice(y+3),
+     juntos(lleno(v[colGrupo]) ? textoGrupo(v[colGrupo]) : '',lleno(v[colEstado]) ? textoEstado(v[colEstado]) : ''),
+     fichero,
+     lleno(v[colPosicion]) ? v[colPosicion] : '']
     .map(l=>'<span class="dvlinea" title="'+l.replace(/"/g,'&quot;')+'">'+l+'</span>').join('');
   bucle.checked=true;
   $('pausa').checked=false;
@@ -760,6 +783,58 @@ function preparaSlider(){
   });
 }
 
+// los marcadores (el usuario, 2026-11-14: «tt/ haz que lea el json para tener los marcadores, visualiza los marcadores
+// en los videos que los tengan», «haz clikables tb los marcadores para mover el cursor del video»): los tiempos (S) de
+// las parejas de la secuencia que se llama como el video en app.dj/proyect.json (el último EXPORT de tangopos), que da
+// app.dj/datos.py (GET /proyect; index.sh ad y ae lo arrancan). Solo en local (file://): publicada, ni lo pide. Se
+// vuelven a pedir al volver a la pestaña (por si hay un EXPORT nuevo). Cada uno, un triángulo abajo del slider, en su
+// punto del tramo (los de fuera del tramo, no); al pulsarlo, el video se para (STOP) en ese punto
+const PUERTO_DJ=parseInt(new URLSearchParams(location.search).get('puerto'))||8771;   // ?puerto=: otro datos.py (las pruebas)
+let marcas=new Map();   // el id del video (en mayúsculas) -> sus tiempos (segundos)
+function leeMarcas(){
+  if (location.protocol!=='file:') return;
+  fetch('http://127.0.0.1:'+PUERTO_DJ+'/proyect').then(r=>r.ok ? r.json() : null).then(j=>{
+    const m=new Map();
+    for (const q of ((j && (j.SEQUENCES || j.S)) || []).concat((j && (j.ARCHIVED || j.Sa)) || [])){   // también las archivadas en tangopos
+      const ts=((q && (q.P || q.COUPLE)) || []).map(p=>p && p.t).filter(Number.isFinite).sort((a,b)=>a-b);
+      if (q.nombre && ts.length) m.set(String(q.nombre).toUpperCase(), ts);
+    }
+    marcas=m;
+    pintaMarcas();
+  }).catch(()=>{});   // sin datos.py: sin marcadores
+}
+function pintaMarcas(){
+  const caja=$('marcas');
+  caja.innerHTML='';
+  if (videoCargado===undefined) return;
+  const ts=marcas.get(String(videos[videoCargado][colId]).toUpperCase()), t=tramo();
+  if (!ts || !(t.fin>t.ini)) return;
+  const P=10;   // la mitad del botón del slider (20 px, cuadrado): su centro va de P a su ancho menos P
+  for (const s of ts){
+    if (s<t.ini || s>t.fin) continue;
+    const d=caja.appendChild(document.createElement('div'));
+    d.className='marca';
+    d.dataset.t=s;
+    d.style.left=(slider.offsetLeft+P+(s-t.ini)/(t.fin-t.ini)*(slider.offsetWidth-2*P))+'px';
+  }
+}
+function preparaMarcas(){
+  $('marcas').addEventListener('pointerdown',e=>{
+    const d=e.target.closest('.marca');
+    if (!d) return;
+    e.preventDefault();
+    // STOP y el cursor al marcador (el usuario: «click cursor, stop y cursor al marcador»; antes seguía como estaba)
+    $('pausa').checked=true;
+    video.pause();
+    video.currentTime=Number(d.dataset.t);
+    actualizaSlider();
+  });
+  ['loadedmetadata','emptied'].forEach(ev=>video.addEventListener(ev,pintaMarcas));
+  if (window.ResizeObserver) new ResizeObserver(pintaMarcas).observe(slider);
+  document.addEventListener('visibilitychange',()=>{ if (!document.hidden) leeMarcas(); });
+  leeMarcas();
+}
+
 // los selectores: la búsqueda arriba, y una fila por selector (label + select)
 function madeSelectores(){
   var pel=$('selectores');
@@ -825,6 +900,7 @@ function inicio(){
   $('pausa').addEventListener('change',cambioPausa);
   $('voz').addEventListener('change',cambioVoz);
   preparaSlider();
+  preparaMarcas();
   video.addEventListener('click',()=>$('pausa').click());
   // los filtros: sus opciones; al cambiar uno, fuera la búsqueda y la lista según los filtros
   for (let i=0;i<5;i++){
@@ -902,6 +978,7 @@ window.onload=async()=>{ if (await descifra()) inicio(); };
      <video id='player2' playsinline disablepictureinpicture></video>
      <div id='barra-slider'>
        <input type='range' id='posicion' min='0' max='1000' value='0'>
+       <div id='marcas'></div>
      </div>
      <div id="contenedor-botones">
         <input type="checkbox" id="velo" class="toggle">
