@@ -189,7 +189,7 @@ html, body {
   appearance: none;
   background: transparent;
 }
-/* los marcadores del video (los tiempos de su secuencia en app.dj/proyect.json; solo en local): triángulos naranjas
+/* los marcadores del video (los tiempos de su secuencia en app.tp/proyect.json; solo en local): triángulos naranjas
    abajo de la barra del slider, en su punto del tramo; al pulsarlos, el video va a ese punto */
 #barra-slider{ position: relative; }
 /* una franja de 10 px abajo de la barra, no la barra entera: encima de todo el slider (inset: 0), Chrome y Brave dejaban
@@ -785,8 +785,8 @@ function preparaSlider(){
 
 // los marcadores (el usuario, 2026-11-14: «tt/ haz que lea el json para tener los marcadores, visualiza los marcadores
 // en los videos que los tengan», «haz clikables tb los marcadores para mover el cursor del video»): los tiempos (S) de
-// las parejas de la secuencia que se llama como el video en app.dj/proyect.json (el último EXPORT de tangopos), que da
-// app.dj/datos.py (GET /proyect; index.sh ad y ae lo arrancan). Solo en local (file://): publicada, ni lo pide. Se
+// las parejas de la secuencia que se llama como el video en app.tp/proyect.json (el último EXPORT de tangopos), que da
+// app.tp/datos.py (GET /proyect; index.sh ad y ae lo arrancan). Solo en local (file://): publicada, ni lo pide. Se
 // vuelven a pedir al volver a la pestaña (por si hay un EXPORT nuevo). Cada uno, un triángulo abajo del slider, en su
 // punto del tramo (los de fuera del tramo, no); al pulsarlo, el video se para (STOP) en ese punto
 const PUERTO_DJ=parseInt(new URLSearchParams(location.search).get('puerto'))||8771;   // ?puerto=: otro datos.py (las pruebas)
