@@ -189,7 +189,7 @@ html, body {
   appearance: none;
   background: transparent;
 }
-/* los marcadores del video (los tiempos de su secuencia en app.tp/proyect.json; solo en local): triángulos naranjas
+/* los marcadores del video (de marcas.js: los de tp y los puestos a mano): triángulos naranjas
    abajo de la barra del slider, en su punto del tramo; al pulsarlos, el video va a ese punto */
 #barra-slider{ position: relative; }
 /* una franja de 10 px abajo de la barra, no la barra entera: encima de todo el slider (inset: 0), Chrome y Brave dejaban
@@ -784,24 +784,31 @@ function preparaSlider(){
 }
 
 // los marcadores (el usuario, 2026-11-14: «tt/ haz que lea el json para tener los marcadores, visualiza los marcadores
-// en los videos que los tengan», «haz clikables tb los marcadores para mover el cursor del video»): los tiempos (S) de
-// las parejas de la secuencia que se llama como el video en app.tp/proyect.json (el último EXPORT de tangopos), que da
-// app.tp/datos.py (GET /proyect; index.sh ad y ae lo arrancan). Solo en local (file://): publicada, ni lo pide. Se
-// vuelven a pedir al volver a la pestaña (por si hay un EXPORT nuevo). Cada uno, un triángulo abajo del slider, en su
-// punto del tramo (los de fuera del tramo, no); al pulsarlo, el video se para (STOP) en ese punto
-const PUERTO_DJ=parseInt(new URLSearchParams(location.search).get('puerto'))||8771;   // ?puerto=: otro datos.py (las pruebas)
+// en los videos que los tengan», «haz clikables tb los marcadores para mover el cursor del video»): de marcas.js, aquí
+// al lado (2026-11-19, el usuario: «podemos salvar solo los marcadores en un js?», «adapta tp/ y tt/ para marcas.js»,
+// «marcas.js se puede editar separadamente para poner manualmente las marcas?»): MARCAS, los de tangopos (los tiempos de
+// las parejas de la secuencia que se llama como el video; los escribe tp al hacer EXPORT, POST /proyect del servidor
+// común, y cmd.publicar/run.sh al publicar), y MARCAS_MANUAL, los puestos a mano arriba del fichero: se suman. Igual en
+// local (file://, sin servidor) y en la publicada. Se vuelve a cargar al volver a la pestaña (por si hay un EXPORT
+// nuevo). Cada uno, un triángulo abajo del slider, en su punto del tramo (los de fuera del tramo, no); al pulsarlo, el
+// video se para (STOP) en ese punto
 let marcas=new Map();   // el id del video (en mayúsculas) -> sus tiempos (segundos)
 function leeMarcas(){
-  if (location.protocol!=='file:') return;
-  fetch('http://127.0.0.1:'+PUERTO_DJ+'/proyect').then(r=>r.ok ? r.json() : null).then(j=>{
+  const s=document.createElement('script');
+  s.src='marcas.js?'+Date.now();   // sin caché: el de ahora
+  s.onload=()=>{
     const m=new Map();
-    for (const q of ((j && (j.SEQUENCES || j.S)) || []).concat((j && (j.ARCHIVED || j.Sa)) || [])){   // también las archivadas en tangopos
-      const ts=((q && (q.P || q.COUPLE)) || []).map(p=>p && p.t).filter(Number.isFinite).sort((a,b)=>a-b);
-      if (q.nombre && ts.length) m.set(String(q.nombre).toUpperCase(), ts);
-    }
+    for (const o of [typeof MARCAS!=='undefined' && MARCAS, typeof MARCAS_MANUAL!=='undefined' && MARCAS_MANUAL])
+      for (const [id,ts] of Object.entries(o || {})){
+        const k=String(id).toUpperCase(), v=(Array.isArray(ts) ? ts : [ts]).map(Number).filter(Number.isFinite);
+        m.set(k, [...new Set([...(m.get(k)||[]), ...v])].sort((a,b)=>a-b));
+      }
     marcas=m;
     pintaMarcas();
-  }).catch(()=>{});   // sin datos.py: sin marcadores
+    s.remove();
+  };
+  s.onerror=()=>s.remove();   // sin marcas.js: sin marcadores
+  document.head.appendChild(s);
 }
 function pintaMarcas(){
   const caja=$('marcas');
